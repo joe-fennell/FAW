@@ -1,0 +1,263 @@
+# coding: utf-8
+
+# In[ ]:
+
+
+import keras
+from classification_models.classification_models import ResNet18
+import numpy as np
+from keras.preprocessing.image import ImageDataGenerator
+from keras import models
+from keras.models import Sequential
+from keras.layers import Conv2D, MaxPooling2D
+from keras.layers import Activation, Dropout, Flatten, Dense
+from keras import layers
+from keras import optimizers
+from skimage.segmentation import slic
+from skimage.segmentation import mark_boundaries
+import pandas as pd
+import pickle
+import numpy as np
+from keras.preprocessing.image import img_to_array, array_to_img
+
+kmeans_3clusters = pickle.load(open('/mnt/kmeans_224.sav', 'rb'))
+
+def predict(data, model, number_segments=2000):
+    """ returns label image"""
+    # segment the image
+    test_segments = slic(data,
+                         n_segments=number_segments,
+                         compactness=0.1,
+                         sigma = 0,
+                         convert2lab=False)
+    
+    # calculate seg stats 
+    test_set = calculate_segment_stats(data,test_segments)
+    
+    # predict
+    test_set_segment_labels=model.predict(test_set)
+    
+    # code via broadcasting
+    return test_set_segment_labels[test_segments]
+
+def calculate_segment_stats(data,segments):
+    # turn the image into a 2D array (pix by channel)
+    d1_flat = pd.DataFrame(np.ravel(data).reshape((-1,3)))
+
+    # add the label vector
+    d1_flat['spID'] = np.ravel(segments)
+
+    # calculate the mean by segment
+    return d1_flat.groupby('spID').mean().values
+
+def preprocess(im):
+    im2=np.array(im)
+    im_labels = predict(im2/255, kmeans_3clusters)
+    #imgarr = img_to_array(im, data_format=None)
+    im2[:,:,0][im_labels==0]=0
+    im2[:,:,1][im_labels==0]=0
+    im2[:,:,2][im_labels==0]=0
+    return array_to_img(im2/255)
+
+
+# In[ ]:
+
+
+# Compute bottelneck features
+datagen = ImageDataGenerator(
+        rotation_range=360,
+        preprocessing_function=preprocess,
+        zoom_range=0.2,
+        fill_mode='nearest')
+
+train_dir = 'data/train'
+validation_dir = 'data/validation'
+
+batch_size = 10
+img_width, img_height = 224, 224
+
+nb_train_samples =1130
+nb_validation_samples = 280
+
+
+"""model = ResNet18(input_shape=(img_width, img_height,3), weights='imagenet', include_top=False)
+generator = datagen.flow_from_directory(
+        'data/train',
+        target_size=(img_width, img_height),
+        batch_size=batch_size,
+        class_mode=None,  # this means our generator will only yield batches of data, no labels
+        shuffle=False)  # our data will be in order, so all first 1000 images will be cats, then 1000 dogs
+# the predict_generator method returns the output of a model, given
+# a generator that yields batches of numpy data
+bottleneck_features_train = model.predict_generator(generator, nb_train_samples//batch_size)
+# save the output as a Numpy array
+np.save('bottleneck_features_train.npy', bottleneck_features_train)
+
+
+generator = datagen.flow_from_directory(
+        'data/validation',
+        target_size=(img_width, img_height),
+        batch_size=batch_size,
+        class_mode=None,
+        shuffle=False)
+bottleneck_features_validation = model.predict_generator(generator, nb_validation_samples//batch_size)
+np.save('bottleneck_features_validation.npy', bottleneck_features_validation)
+
+# In[ ]:
+
+
+from keras.utils.np_utils import to_categorical
+datagen_top = ImageDataGenerator()  
+generator_top = datagen_top.flow_from_directory(  
+         train_dir,  
+         target_size=(img_width, img_height),  
+         batch_size=batch_size,  
+         class_mode='categorical',  
+         shuffle=False)  
+   
+#nb_train_samples = len(generator_top.filenames)  
+num_classes = len(generator_top.class_indices)  
+   
+# load the bottleneck features saved earlier  
+train_data = np.load('bottleneck_features_train.npy')  
+  
+# get the class lebels for the training data, in the original order  
+train_labels = generator_top.classes  
+
+generator_top = datagen_top.flow_from_directory(  
+         validation_dir,  
+         target_size=(img_width, img_height),  
+         batch_size=batch_size,  
+         class_mode=None,  
+         shuffle=False)  
+   
+#nb_validation_samples = len(generator_top.filenames)  
+   
+validation_data = np.load('bottleneck_features_validation.npy')  
+   
+validation_labels = generator_top.classes  
+    
+model = Sequential()
+model.add(Flatten(input_shape=train_data.shape[1:]))
+model.add(Dense(256, activation='relu'))
+model.add(Dropout(0.5))
+model.add(Dense(1, activation='sigmoid'))
+
+adam=keras.optimizers.Adam(lr=0.001)
+model.compile(optimizer='rmsprop',
+              loss='binary_crossentropy',
+              metrics=['accuracy'])
+
+history = model.fit(train_data, train_labels,
+          epochs=150,
+          batch_size=batch_size,
+          validation_data=(validation_data, validation_labels))
+model.save_weights('bottleneck_fc_model.h5')
+"""
+
+# In[ ]:
+
+
+"""import matplotlib.pyplot as plt
+
+plt.plot(history.history['acc'], label='train')
+plt.plot(history.history['val_acc'], label = 'validation')
+plt.title('model accuracy')
+plt.xlabel('epoch')
+plt.ylabel('loss')
+plt.legend(loc='upper left')
+plt.savefig('bottleneck_fc_acc.pdf')
+"""
+
+# In[ ]:
+
+
+# build model
+base_model = ResNet18(input_shape=(img_width, img_height,3), weights='imagenet', include_top=False)
+
+# Create a model
+fullyconnected_model = Sequential()
+fullyconnected_model.add(Flatten(input_shape=base_model.output_shape[1:]))
+fullyconnected_model.add(Dense(256, activation='relu'))
+fullyconnected_model.add(Dropout(0.5))
+fullyconnected_model.add(Dense(1, activation='sigmoid'))
+
+fullyconnected_model.load_weights('bottleneck_fc_model.h5')
+
+model = models.Model(inputs= base_model.input, outputs= fullyconnected_model(base_model.output))
+
+for layer in model.layers[:-3]:
+    layer.trainable = False
+
+rmsprop = keras.optimizers.RMSprop(lr=0.0001)
+model.compile(optimizer=rmsprop,
+              loss='binary_crossentropy',
+              metrics=['accuracy'])
+
+print('model compiled')
+
+model.summary()
+
+
+# In[ ]:
+
+
+# prepare data augmentation configuration
+train_datagen = ImageDataGenerator(
+        rotation_range=360,
+        preprocessing_function=preprocess,
+        zoom_range=0.2,
+        fill_mode='nearest')
+
+validation_datagen = ImageDataGenerator(preprocessing_function=preprocess)
+
+train_generator = train_datagen.flow_from_directory(
+        train_dir,
+        target_size=(img_height, img_width),
+        batch_size=batch_size,
+        class_mode='binary')
+
+validation_generator = validation_datagen.flow_from_directory(
+        validation_dir,
+        target_size=(img_height, img_width),
+        batch_size=batch_size,
+        class_mode='binary')
+
+# fine-tune the model
+history = model.fit_generator(
+        train_generator,
+        steps_per_epoch=nb_train_samples // batch_size,
+        epochs=20,
+        validation_data=validation_generator,
+        validation_steps=nb_validation_samples // batch_size)
+
+model.save_weights('/mnt/resnet18_fintunning_1_model.h5')
+print('model fit complete')
+
+
+# In[ ]:
+
+
+#import matplotlib.pyplot as plt
+#get_ipython().run_line_magic('matplotlib', 'inline')
+print(history.history.keys())
+
+# summarize history for accuracy
+"""plt.plot(history.history['acc'])
+plt.plot(history.history['val_acc'])
+plt.title('model accuracy')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train', 'validation'], loc='upper left')
+plt.savefig('accuracy.pdf')
+
+# summarize history for loss
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'validation'], loc='upper left')
+plt.savefig('loss.pdf')
+"""
+
