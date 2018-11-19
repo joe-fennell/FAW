@@ -70,9 +70,8 @@ nb_validation_samples = 280
 #                  Train FC network using bottleneck features                #
 ##############################################################################
 
-datagen = ImageDataGenerator(rotation_range=360,
+datagen = ImageDataGenerator(rotation_range=40,
                              preprocessing_function=preprocess,
-                             zoom_range=0.2,
                              fill_mode='nearest')
 
 model = applications.resnet50.ResNet50(input_shape=(img_width, img_height, 3),
@@ -134,7 +133,6 @@ model.add(Dense(256, activation='relu'))
 model.add(Dropout(0.5))
 model.add(Dense(1, activation='sigmoid'))
 
-adam = keras.optimizers.Adam(lr=0.001)
 model.compile(optimizer='rmsprop',
               loss='binary_crossentropy',
               metrics=['accuracy'])
@@ -172,7 +170,7 @@ model = models.Model(inputs=base_model.input,
 for layer in model.layers[:-3]:
     layer.trainable = False
 
-rmsprop = keras.optimizers.RMSprop(lr=0.0001)
+rmsprop = keras.optimizers.RMSprop(lr=0.001)
 model.compile(optimizer=rmsprop,
               loss='binary_crossentropy',
               metrics=['accuracy'])
@@ -182,9 +180,8 @@ print('model compiled')
 model.summary()
 
 # prepare data augmentation configuration
-train_datagen = ImageDataGenerator(rotation_range=360,
+train_datagen = ImageDataGenerator(rotation_range=40,
                                    preprocessing_function=preprocess,
-                                   zoom_range=0.2,
                                    fill_mode='nearest')
 
 validation_datagen = ImageDataGenerator(preprocessing_function=preprocess)

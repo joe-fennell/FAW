@@ -70,9 +70,8 @@ nb_validation_samples = 280
 #                  Train FC network using bottleneck features                #
 ##############################################################################
 
-datagen = ImageDataGenerator(rotation_range=360,
+datagen = ImageDataGenerator(rotation_range=40,
                              preprocessing_function=preprocess,
-                             zoom_range=0.2,
                              fill_mode='nearest')
 
 model = ResNet18(input_shape=(img_width, img_height, 3), weights='imagenet',
@@ -182,9 +181,8 @@ print('model compiled')
 model.summary()
 
 # prepare data augmentation configuration
-train_datagen = ImageDataGenerator(rotation_range=360,
+train_datagen = ImageDataGenerator(rotation_range=40,
                                    preprocessing_function=preprocess,
-                                   zoom_range=0.2,
                                    fill_mode='nearest')
 
 validation_datagen = ImageDataGenerator(preprocessing_function=preprocess)
