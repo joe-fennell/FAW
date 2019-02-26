@@ -1,5 +1,5 @@
 import keras
-from classification_models.classification_models import ResNet18
+from classification_models.resnet import ResNet18
 import numpy as np
 from keras.preprocessing.image import ImageDataGenerator
 from keras import models
@@ -8,7 +8,6 @@ from keras.layers import Dropout, Flatten, Dense
 from skimage.segmentation import slic
 import pandas as pd
 import pickle
-import numpy as np
 from keras.preprocessing.image import array_to_img
 import json
 
@@ -49,7 +48,6 @@ def preprocess(im):
     return array_to_img(im / 255)
 
 
-
 ##############################################################################
 #                      Define useful variables                               #
 ##############################################################################
@@ -70,7 +68,7 @@ nb_validation_samples = 280
 #                  Train FC network using bottleneck features                #
 ##############################################################################
 
-datagen = ImageDataGenerator(rotation_range=40,
+datagen = ImageDataGenerator(rotation_range=90,
                              preprocessing_function=preprocess,
                              fill_mode='nearest')
 
@@ -84,7 +82,7 @@ generator = datagen.flow_from_directory('data/train',
 bottleneck_features_train = model.predict_generator(generator,
                                                     nb_train_samples // batch_size)
 # save the output as a Numpy array
-np.save('bottleneck_features_train.npy', bottleneck_features_train)
+np.save('bottleneck_features_train_amsgrad.npy', bottleneck_features_train)
 
 
 generator = datagen.flow_from_directory('data/validation',
@@ -93,8 +91,9 @@ generator = datagen.flow_from_directory('data/validation',
                                         class_mode=None,
                                         shuffle=False)
 bottleneck_features_validation = model.predict_generator(generator,
-                                                         nb_validation_samples//batch_size)
-np.save('bottleneck_features_validation.npy', bottleneck_features_validation)
+                                                         nb_validation_samples // batch_size)
+np.save('bottleneck_features_validation_amsgrad.npy',
+        bottleneck_features_validation)
 
 
 datagen_top = ImageDataGenerator()
@@ -109,7 +108,7 @@ generator_top = datagen_top.flow_from_directory(train_dir,
 num_classes = len(generator_top.class_indices)
 
 # load the bottleneck features saved earlier
-train_data = np.load('bottleneck_features_train.npy')
+train_data = np.load('bottleneck_features_train_amsgrad.npy')
 
 # get the class lebels for the training data, in the original order
 train_labels = generator_top.classes
@@ -123,29 +122,28 @@ generator_top = datagen_top.flow_from_directory(validation_dir,
 
 # nb_validation_samples = len(generator_top.filenames)
 
-validation_data = np.load('bottleneck_features_validation.npy')
+validation_data = np.load('bottleneck_features_validation_amsgrad.npy')
 
 validation_labels = generator_top.classes
 
 model = Sequential()
 model.add(Flatten(input_shape=train_data.shape[1:]))
-model.add(Dense(256, activation='relu'))
+model.add(Dense(1024, activation='relu'))
 model.add(Dropout(0.5))
 model.add(Dense(1, activation='sigmoid'))
 
-adam = keras.optimizers.Adam(lr=0.001)
-model.compile(optimizer='rmsprop',
+adam = keras.optimizers.Adam(lr=0.0001, amsgrad=True)
+model.compile(optimizer=adam,
               loss='binary_crossentropy',
               metrics=['accuracy'])
 
 history = model.fit(train_data, train_labels,
-                    epochs=150,
+                    epochs=25,
                     batch_size=batch_size,
                     validation_data=(validation_data, validation_labels))
-model.save_weights('/mnt/bottleneck_fc_model.h5')
+model.save_weights('/mnt/bottleneck_fc_model_amsgrad.h5')
 history_dict = history.history
-json.dump(history_dict, open("/mnt/bottleneck_history.json", 'w'))
-
+json.dump(history_dict, open("/mnt/bottleneck_history_amsgrad.json", 'w'))
 
 ##############################################################################
 #                              FineTune ResNet18                             #
@@ -159,11 +157,11 @@ base_model = ResNet18(input_shape=(img_width, img_height, 3),
 # Create a model
 fullyconnected_model = Sequential()
 fullyconnected_model.add(Flatten(input_shape=base_model.output_shape[1:]))
-fullyconnected_model.add(Dense(256, activation='relu'))
+fullyconnected_model.add(Dense(1024, activation='relu'))
 fullyconnected_model.add(Dropout(0.5))
 fullyconnected_model.add(Dense(1, activation='sigmoid'))
 
-fullyconnected_model.load_weights('bottleneck_fc_model.h5')
+fullyconnected_model.load_weights('bottleneck_fc_model_amsgrad.h5')
 
 model = models.Model(inputs=base_model.input,
                      outputs=fullyconnected_model(base_model.output))
@@ -171,8 +169,8 @@ model = models.Model(inputs=base_model.input,
 for layer in model.layers[:-3]:
     layer.trainable = False
 
-rmsprop = keras.optimizers.RMSprop(lr=0.0001)
-model.compile(optimizer=rmsprop,
+adam = keras.optimizers.Adam(lr=0.00001, amsgrad=True)
+model.compile(optimizer=adam,
               loss='binary_crossentropy',
               metrics=['accuracy'])
 
@@ -181,7 +179,7 @@ print('model compiled')
 model.summary()
 
 # prepare data augmentation configuration
-train_datagen = ImageDataGenerator(rotation_range=40,
+train_datagen = ImageDataGenerator(rotation_range=90,
                                    preprocessing_function=preprocess,
                                    fill_mode='nearest')
 
@@ -202,12 +200,11 @@ validation_generator = validation_datagen.flow_from_directory(validation_dir,
 # fine-tune the model
 history = model.fit_generator(train_generator,
                               steps_per_epoch=nb_train_samples // batch_size,
-                              epochs=20,
+                              epochs=100,
                               validation_data=validation_generator,
                               validation_steps=nb_validation_samples // batch_size)
 
-model.save_weights('/mnt/resnet18_fintunning_1_model.h5')
+model.save_weights('/mnt/resnet18_fintunning_1_model_adadelta.h5')
 history_dict = history.history
-json.dump(history_dict, open("/mnt/finetunning_history.json", 'w'))
+json.dump(history_dict, open("/mnt/finetunning_history_amsgrad_amsgrad_lr00001.json", 'w'))
 print('model fit complete')
-
