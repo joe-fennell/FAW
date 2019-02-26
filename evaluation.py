@@ -18,6 +18,7 @@ def smooth_data(y):
 
 
 def plot_metric(train, val, title):
+    plt.clf()
     plt.plot(train, label='train', color='blue', linestyle='--', alpha=0.5)
     plt.plot(val, label='val', color='red', linestyle='--', alpha=0.5)
     plt.plot(smooth_data(train), label='smooth train', color='blue', linestyle='-')
@@ -26,7 +27,7 @@ def plot_metric(train, val, title):
     plt.ylabel(title)
     plt.xlabel('epoch')
     plt.legend(['train', 'validation'], loc='upper left')
-    plt.savefig(title+'.pdf')
+    plt.savefig(title+'.png')
 
     return None
 
@@ -34,20 +35,22 @@ def plot_metric(train, val, title):
 def load_data(filename):
     with open(filename) as f:
         history = json.load(f)
-        history = literal_eval(history)
+        #history = literal_eval(history)
     return history
 
 
 def compare(data):
-    train = np.average(data['loss'][-10:])
-    val = np.average(data['val_loss'][-10:])
-    diff = val - train
+    train = np.average(data['acc'][-10:])
+    val = np.average(data['val_acc'][-10:])
+    diff = train - val
     print('Train     : ' + str(train))
     print('Validation: ' + str(val))
     print('Difference: ' + str(diff))
     return None
 
 
-history = load_data('history/test4.json') #change this to your file
+history = load_data('../bottleneck_history_rmsprop.json') #change this to your file
 compare(history)
 plot_metric(history['loss'], history['val_loss'], 'loss')
+plot_metric(history['acc'], history['val_acc'], 'accuracy')
+
