@@ -51,5 +51,3 @@ def compare(data):
 history = load_data('history/test4.json') #change this to your file
 compare(history)
 plot_metric(history['loss'], history['val_loss'], 'loss')
-plot_metric(history['regression_loss'], history['val_regression_loss'], 'regression_loss')
-plot_metric(history['classification_loss'], history['val_classification_loss'], 'classification_loss')
