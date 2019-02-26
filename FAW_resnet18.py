@@ -40,7 +40,7 @@ def calculate_segment_stats(data, segments):
 
 def preprocess(im):
     im2 = np.array(im)
-    im_labels = predict(im2 / 255, kmeans_3clusters)
+    im_labels = predict(np.float64(im2 / 255), kmeans_3clusters)
     # imgarr = img_to_array(im, data_format=None)
     im2[:, :, 0][im_labels == 0] = 0
     im2[:, :, 1][im_labels == 0] = 0
