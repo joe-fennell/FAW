@@ -1,3 +1,6 @@
+import os
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID";
+os.environ["CUDA_VISIBLE_DEVICES"]="1";
 import keras
 from classification_models.resnet import ResNet18
 import numpy as np
