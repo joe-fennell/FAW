@@ -4,7 +4,7 @@ MirrorURL: http://mirror.centos.org/centos-%{OSVERSION}/%{OSVERSION}/os/$basearc
 Include: yum wget
 
 %post
-wget https://developer.download.nvidia.com/compute/machine-learning/cudnn/secure/v7.5.0.56/prod/10.1_20190225/cudnn-10.1-linux-x64-v7.5.0.56.tgz?8DOQe_xj8udxfH_JJnIMxmoZkr3nb8Fc563EACKSwNkDgDBgOd3sHfcP2v2QxJAcrB0SbqTXYe3AhW3-a84Q2lwCHlKwpHytTqxvZ5PFRu8oQULYXvNLLU0J1XqcLcVBZq7S2xxk7Qix5JxnmDdj4fjylWZkpKF5kNHe7GSgVQxR0j0sKoJxPE4zIwkvtr_O2NHSCbgMox5PrKUBxOifawmtwls
+wget https://developer.download.nvidia.com/compute/machine-learning/cudnn/secure/v7.5.0.56/prod/10.1_20190225/cudnn-10.1-linux-x64-v7.5.0.56.tgz?F-9H5FQbEIHT0lnz_yeRtmmbgJgrDm7Vax9Z3knm9HCmYeMg_kCMJgtNzZbxGvCN8Cc5OQCt4o1OWJ9Mjm1TKa5ho5_c2nKd4tOddByAyJazxCjhY38yryt8q4KPwizAVWGmF-VsyZv3_c2T5MNJa5orhewi9BNe6o8iv8EBinR4Xofvqjs0GUSFOXNk0hH0o7eiyIBY-PaIMVVRVC1_YafTBZA
 yum -y update
 yum -y install yum-utils
 yum -y groupinstall development
@@ -25,7 +25,7 @@ export PATH=/usr/local/cuda-10.1/bin${PATH:+:${PATH}}
 export LD_LIBRARY_PATH=/usr/local/cuda-10.1/lib64
 #curl -O https://developer.nvidia.com/compute/machine-learning/cudnn/secure/v7.5.0.56/prod/10.1_20190225/cudnn-10.1-linux-x64-v7.5.0.56.tgz
 #wget https://developer.download.nvidia.com/compute/machine-learning/cudnn/secure/v7.5.0.56/prod/10.1_20190225/cudnn-10.1-linux-x64-v7.5.0.56.tgz?5ojjIUQ_jcUQsQmxzFV27V7-IdVgF0-72Nrv2afMBUC_uAjPakNS55HcAs-vogqufp782nboMxJetqk0EBFMGcaE5jsjartAsqsG2JwbUSuovLGO-GSJQZWoMnWFMKBrDAbXuufs65iTz6tZ5t1iP0IhBsxQEiMDG2IheWMWzp43XP8NmQ0F7dx_OQnDQB7MXa71yiRmR3r6BXi22lUVjWe_M98
-mv cudnn-10.1-linux-x64-v7.5.0.56.tgz?8DOQe_xj8udxfH_JJnIMxmoZkr3nb8Fc563EACKSwNkDgDBgOd3sHfcP2v2QxJAcrB0SbqTXYe3AhW3-a84Q2lwCHlKwpHytTqxvZ5PFRu8oQULYXvNLLU0J1XqcLcVBZq7S2xxk7Qix5JxnmDdj4fjylWZkpKF5kNHe7GSgVQxR0j0sKoJxPE4zIwkvtr_O2NHSCbgMox5PrKUBxOifawmtwls cudnn-10.1-linux-x64-v7.5.0.56.tgz
+mv cudnn-10.1-linux-x64-v7.5.0.56.tgz?F-9H5FQbEIHT0lnz_yeRtmmbgJgrDm7Vax9Z3knm9HCmYeMg_kCMJgtNzZbxGvCN8Cc5OQCt4o1OWJ9Mjm1TKa5ho5_c2nKd4tOddByAyJazxCjhY38yryt8q4KPwizAVWGmF-VsyZv3_c2T5MNJa5orhewi9BNe6o8iv8EBinR4Xofvqjs0GUSFOXNk0hH0o7eiyIBY-PaIMVVRVC1_YafTBZA cudnn-10.1-linux-x64-v7.5.0.56.tgz
 tar -zxf cudnn-10.1-linux-x64-v7.5.0.56.tgz
 cd cuda
 cp -av lib64/* /usr/local/cuda/lib64/
@@ -41,7 +41,7 @@ virtualenv --system-site-packages /tensorflow
 virtualenv --system-site-packages -p python3.6 /tensorflow
 source /tensorflow/bin/activate
 easy_install -U pip
-pip3 install tensorflow-gpu
+pip3 install tensorflow-gpu==1.13.1
 deactivate
 yum -y install hdf5
 yum -y install hdf5-devel
