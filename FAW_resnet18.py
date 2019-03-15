@@ -1,6 +1,8 @@
-import os
-os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID";
-os.environ["CUDA_VISIBLE_DEVICES"]="1";
+import tensorflow as tf
+from keras.backend.tensorflow_backend import set_session
+config = tf.ConfigProto()
+config.gpu_options.per_process_gpu_memory_fraction = 0.7
+set_session(tf.Session(config=config))
 import keras
 from classification_models.resnet import ResNet18
 import numpy as np
@@ -57,10 +59,10 @@ def preprocess(im):
 
 kmeans_3clusters = pickle.load(open('/mnt/kmeans_224.sav', 'rb'))
 
-train_dir = 'data/train'
-validation_dir = 'data/validation'
+train_dir = '/mnt/data/train'
+validation_dir = '/mnt/data/validation'
 
-batch_size = 10
+batch_size = 1
 img_width, img_height = 224, 224
 
 nb_train_samples = 1130
@@ -71,13 +73,13 @@ nb_validation_samples = 280
 #                  Train FC network using bottleneck features                #
 ##############################################################################
 
-datagen = ImageDataGenerator(rotation_range=90,
+"""datagen = ImageDataGenerator(rotation_range=90,
                              preprocessing_function=preprocess,
                              fill_mode='nearest')
 
 model = ResNet18(input_shape=(img_width, img_height, 3), weights='imagenet',
                  include_top=False)
-generator = datagen.flow_from_directory('data/train',
+generator = datagen.flow_from_directory(train_dir,
                                         target_size=(img_width, img_height),
                                         batch_size=batch_size,
                                         class_mode=None,
@@ -88,7 +90,7 @@ bottleneck_features_train = model.predict_generator(generator,
 np.save('bottleneck_features_train_amsgrad.npy', bottleneck_features_train)
 
 
-generator = datagen.flow_from_directory('data/validation',
+generator = datagen.flow_from_directory(validation_dir,
                                         target_size=(img_width, img_height),
                                         batch_size=batch_size,
                                         class_mode=None,
@@ -146,7 +148,7 @@ history = model.fit(train_data, train_labels,
                     validation_data=(validation_data, validation_labels))
 model.save_weights('/mnt/bottleneck_fc_model_amsgrad.h5')
 history_dict = history.history
-json.dump(history_dict, open("/mnt/bottleneck_history_amsgrad.json", 'w'))
+json.dump(history_dict, open("/mnt/bottleneck_history_amsgrad.json", 'w'))"""
 
 ##############################################################################
 #                              FineTune ResNet18                             #
@@ -164,12 +166,12 @@ fullyconnected_model.add(Dense(1024, activation='relu'))
 fullyconnected_model.add(Dropout(0.5))
 fullyconnected_model.add(Dense(1, activation='sigmoid'))
 
-fullyconnected_model.load_weights('bottleneck_fc_model_amsgrad.h5')
+fullyconnected_model.load_weights('/mnt/bottleneck_fc_model_amsgrad.h5')
 
 model = models.Model(inputs=base_model.input,
                      outputs=fullyconnected_model(base_model.output))
 
-for layer in model.layers[:-3]:
+for layer in model.layers[:-2]:
     layer.trainable = False
 
 adam = keras.optimizers.Adam(lr=0.00001, amsgrad=True)
