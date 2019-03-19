@@ -73,7 +73,7 @@ nb_validation_samples = 280
 #                  Train FC network using bottleneck features                #
 ##############################################################################
 
-"""datagen = ImageDataGenerator(rotation_range=90,
+datagen = ImageDataGenerator(rotation_range=90,
                              preprocessing_function=preprocess,
                              fill_mode='nearest')
 
@@ -148,7 +148,7 @@ history = model.fit(train_data, train_labels,
                     validation_data=(validation_data, validation_labels))
 model.save_weights('/mnt/bottleneck_fc_model_amsgrad.h5')
 history_dict = history.history
-json.dump(history_dict, open("/mnt/bottleneck_history_amsgrad.json", 'w'))"""
+json.dump(history_dict, open("/mnt/bottleneck_history_amsgrad.json", 'w'))
 
 ##############################################################################
 #                              FineTune ResNet18                             #
