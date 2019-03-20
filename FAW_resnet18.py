@@ -1,20 +1,45 @@
+"""FAW CNN Classifier based on ResNet18"""
+
+# TODO: investigate different image segmentation / preprocessing options
+# TODO: investigate whether we can avoid hard coded image dimensions
+
+
 import tensorflow as tf
-from keras.backend.tensorflow_backend import set_session
-config = tf.ConfigProto()
-config.gpu_options.per_process_gpu_memory_fraction = 0.8
-set_session(tf.Session(config=config))
 import keras
-from classification_models.resnet import ResNet18
+import pandas as pd
+import pickle
 import numpy as np
+import json
+from keras.backend.tensorflow_backend import set_session
 from keras.preprocessing.image import ImageDataGenerator
 from keras import models
 from keras.models import Sequential
 from keras.layers import Dropout, Flatten, Dense
-from skimage.segmentation import slic
-import pandas as pd
-import pickle
 from keras.preprocessing.image import array_to_img
-import json
+from classification_models.resnet import ResNet18
+from skimage.segmentation import slic
+
+# Set TensorFlow config
+config = tf.ConfigProto()
+config.gpu_options.per_process_gpu_memory_fraction = 0.8
+set_session(tf.Session(config=config))
+
+##############################################################################
+#                      Define useful variables                               #
+##############################################################################
+
+# load in k-means image segmentation made in jupyter notebook
+kmeans_3clusters = pickle.load(open('/mnt/kmeans_224.sav', 'rb'))
+
+# data dirs
+train_dir = '/mnt/data/train'
+validation_dir = '/mnt/data/validation'
+
+batch_size = 1
+img_width, img_height = 224, 224
+
+nb_train_samples = 1130
+nb_validation_samples = 280
 
 
 def predict(data, model, number_segments=2000):
@@ -54,82 +79,74 @@ def preprocess(im):
 
 
 ##############################################################################
-#                      Define useful variables                               #
-##############################################################################
-
-kmeans_3clusters = pickle.load(open('/mnt/kmeans_224.sav', 'rb'))
-
-train_dir = '/mnt/data/train'
-validation_dir = '/mnt/data/validation'
-
-batch_size = 1
-img_width, img_height = 224, 224
-
-nb_train_samples = 1130
-nb_validation_samples = 280
-
-
-##############################################################################
 #                  Train FC network using bottleneck features                #
 ##############################################################################
 
+def get_iterator(generator,
+                 data_dir,
+                 target_size=(img_width, img_height),
+                 batch_size=batch_size,
+                 class_mode=None,
+                 shuffle=False):
+
+    """ Returns a DirectoryIterator yielding tuples of (x, y) where x is a numpy
+    array containing a batch of images with shape (batch_size, *target_size,
+    channels) and y is a numpy array of corresponding labels.
+    https://keras.io/preprocessing/image/#flow_from_directory """
+
+    iterator = generator.flow_from_directory(data_dir, target_size=target_size,
+                                             batch_size=batch_size,
+                                             class_mode=class_mode,
+                                             shuffle=shuffle)
+
+    return iterator
+
+
+# Build iterators to access training and validation data
 datagen = ImageDataGenerator(rotation_range=90,
                              preprocessing_function=preprocess,
                              fill_mode='nearest')
 
+train_iter = get_iterator(datagen, train_dir)
+valid_iter = get_iterator(datagen, validation_dir)
+
+
 model = ResNet18(input_shape=(img_width, img_height, 3), weights='imagenet',
                  include_top=False)
-generator = datagen.flow_from_directory(train_dir,
-                                        target_size=(img_width, img_height),
-                                        batch_size=batch_size,
-                                        class_mode=None,
-                                        shuffle=False)
-bottleneck_features_train = model.predict_generator(generator,
-                                                    nb_train_samples // batch_size)
+
+bottleneck_features_train = model.predict_generator(train_iter,
+                                                    (nb_train_samples //
+                                                     batch_size))
 # save the output as a Numpy array
 np.save('bottleneck_features_train_amsgrad.npy', bottleneck_features_train)
 
 
-generator = datagen.flow_from_directory(validation_dir,
-                                        target_size=(img_width, img_height),
-                                        batch_size=batch_size,
-                                        class_mode=None,
-                                        shuffle=False)
-bottleneck_features_validation = model.predict_generator(generator,
-                                                         nb_validation_samples // batch_size)
+bottleneck_features_validation = model.predict_generator(valid_iter,
+                                                         (nb_validation_samples
+                                                          // batch_size))
 np.save('bottleneck_features_validation_amsgrad.npy',
         bottleneck_features_validation)
 
 
 datagen_top = ImageDataGenerator()
-generator_top = datagen_top.flow_from_directory(train_dir,
-                                                target_size=(img_width,
-                                                             img_height),
-                                                batch_size=batch_size,
-                                                class_mode='categorical',
-                                                shuffle=False)
+train_iter_top = get_iterator(datagen_top, train_dir, class_mode='categorical')
 
 # nb_train_samples = len(generator_top.filenames)
-num_classes = len(generator_top.class_indices)
+num_classes = len(train_iter_top.class_indices)
 
 # load the bottleneck features saved earlier
 train_data = np.load('bottleneck_features_train_amsgrad.npy')
 
 # get the class lebels for the training data, in the original order
-train_labels = generator_top.classes
+train_labels = train_iter_top.classes
 
-generator_top = datagen_top.flow_from_directory(validation_dir,
-                                                target_size=(img_width,
-                                                             img_height),
-                                                batch_size=batch_size,
-                                                class_mode=None,
-                                                shuffle=False)
+valid_iter_top = get_iterator(datagen_top, validation_dir)
 
 # nb_validation_samples = len(generator_top.filenames)
 
 validation_data = np.load('bottleneck_features_validation_amsgrad.npy')
 
-validation_labels = generator_top.classes
+validation_labels = valid_iter_top.classes
 
 model = Sequential()
 model.add(Flatten(input_shape=train_data.shape[1:]))
@@ -153,7 +170,6 @@ json.dump(history_dict, open("/mnt/bottleneck_history_amsgrad.json", 'w'))
 ##############################################################################
 #                              FineTune ResNet18                             #
 ##############################################################################
-
 
 # build model
 base_model = ResNet18(input_shape=(img_width, img_height, 3),
@@ -190,26 +206,20 @@ train_datagen = ImageDataGenerator(rotation_range=90,
 
 validation_datagen = ImageDataGenerator(preprocessing_function=preprocess)
 
-train_generator = train_datagen.flow_from_directory(train_dir,
-                                                    target_size=(img_height,
-                                                                 img_width),
-                                                    batch_size=batch_size,
-                                                    class_mode='binary')
+train_iterator = get_iterator(train_datagen, train_dir, class_mode='binary')
 
-validation_generator = validation_datagen.flow_from_directory(validation_dir,
-                                                              target_size=(img_height,
-                                                                           img_width),
-                                                              batch_size=batch_size,
-                                                              class_mode='binary')
+validation_iterator = get_iterator(validation_dir, class_mode='binary')
 
 # fine-tune the model
-history = model.fit_generator(train_generator,
+history = model.fit_generator(train_iterator,
                               steps_per_epoch=nb_train_samples // batch_size,
                               epochs=100,
-                              validation_data=validation_generator,
-                              validation_steps=nb_validation_samples // batch_size)
+                              validation_data=validation_iterator,
+                              validation_steps=(nb_validation_samples //
+                                                batch_size))
 
 model.save_weights('/mnt/resnet18_fintunning_1_model_adadelta.h5')
 history_dict = history.history
-json.dump(history_dict, open("/mnt/finetunning_history_amsgrad_amsgrad_lr00001.json", 'w'))
+json.dump(history_dict,
+          open("/mnt/finetunning_history_amsgrad_amsgrad_lr00001.json", 'w'))
 print('model fit complete')
