@@ -105,68 +105,74 @@ def get_iterator(generator,
     return iterator
 
 
-# Build iterators to access training and validation data
-datagen = ImageDataGenerator(rotation_range=90,
-                             preprocessing_function=preprocess,
-                             fill_mode='nearest')
+recalculate = input("Recalculate FC weights? (y/n)")
 
-train_iter = get_iterator(datagen, train_dir)
-valid_iter = get_iterator(datagen, validation_dir)
+if recalculate == 'y':
 
+    # Build iterators to access training and validation data
+    datagen = ImageDataGenerator(rotation_range=90,
+                                 preprocessing_function=preprocess,
+                                 fill_mode='nearest')
 
-model = ResNet18(input_shape=(img_width, img_height, 3), weights='imagenet',
-                 include_top=False)
+    train_iter = get_iterator(datagen, train_dir)
+    valid_iter = get_iterator(datagen, validation_dir)
 
-# get a numpy array of predictions from the train data
-bottleneck_features_train = model.predict_generator(train_iter,
-                                                    (nb_train_samples //
-                                                     batch_size))
-np.save('/mnt/saves/bottleneck_features_train_amsgrad.npy',
-        bottleneck_features_train)
-input("Saved train features.")
+    model = ResNet18(input_shape=(img_width, img_height, 3),
+                     weights='imagenet',
+                     include_top=False)
 
-# get a numpy array of predictions from the validation data
-bottleneck_features_validation = model.predict_generator(valid_iter,
-                                                         (nb_validation_samples
-                                                          // batch_size))
-np.save('/mnt/saves/bottleneck_features_validation_amsgrad.npy',
-        bottleneck_features_validation)
-input("Saved validation features.")
+    # get a numpy array of predictions from the train data
+    bottleneck_features_train = model.predict_generator(train_iter,
+                                                        (nb_train_samples //
+                                                         batch_size))
+    np.save('/mnt/saves/bottleneck_features_train_amsgrad.npy',
+            bottleneck_features_train)
+    input("Saved train features.")
 
-# get the number of classes and their labels in original order
-datagen_top = ImageDataGenerator()
-train_iter_top = get_iterator(datagen_top, train_dir, class_mode='categorical')
-valid_iter_top = get_iterator(datagen_top, validation_dir)
-train_labels = train_iter_top.classes
-validation_labels = valid_iter_top.classes
-num_classes = len(train_iter_top.class_indices)
+    # get a numpy array of predictions from the validation data
+    bottleneck_features_validation = model.predict_generator(
+        valid_iter,
+        (nb_validation_samples
+         // batch_size))
+    np.save('/mnt/saves/bottleneck_features_validation_amsgrad.npy',
+            bottleneck_features_validation)
+    input("Saved validation features.")
 
-# load the bottleneck features saved earlier
-train_data = bottleneck_features_train
-validation_data = bottleneck_features_validation
+    # get the number of classes and their labels in original order
+    datagen_top = ImageDataGenerator()
+    train_iter_top = get_iterator(datagen_top, train_dir,
+                                  class_mode='categorical')
+    valid_iter_top = get_iterator(datagen_top, validation_dir)
+    train_labels = train_iter_top.classes
+    validation_labels = valid_iter_top.classes
+    num_classes = len(train_iter_top.class_indices)
 
-# nb_validation_samples = len(generator_top.filenames)
-# nb_train_samples = len(generator_top.filenames)
+    # load the bottleneck features saved earlier
+    train_data = bottleneck_features_train
+    validation_data = bottleneck_features_validation
 
-model = Sequential()
-model.add(Flatten(input_shape=train_data.shape[1:]))
-model.add(Dense(1024, activation='relu'))
-model.add(Dropout(0.5))
-model.add(Dense(1, activation='sigmoid'))
+    # nb_validation_samples = len(generator_top.filenames)
+    # nb_train_samples = len(generator_top.filenames)
 
-adam = keras.optimizers.Adam(lr=0.0001, amsgrad=True)
-model.compile(optimizer=adam,
-              loss='binary_crossentropy',
-              metrics=['accuracy'])
+    model = Sequential()
+    model.add(Flatten(input_shape=train_data.shape[1:]))
+    model.add(Dense(1024, activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(1, activation='sigmoid'))
 
-history = model.fit(train_data, train_labels,
-                    epochs=25,
-                    batch_size=batch_size,
-                    validation_data=(validation_data, validation_labels))
-model.save_weights('/mnt/saves/bottleneck_fc_model_amsgrad.h5')
-history_dict = history.history
-json.dump(history_dict, open("/mnt/saves/bottleneck_history_amsgrad.json",
-                             'w'))
+    adam = keras.optimizers.Adam(lr=0.0001, amsgrad=True)
+    model.compile(optimizer=adam,
+                  loss='binary_crossentropy',
+                  metrics=['accuracy'])
+
+    history = model.fit(train_data, train_labels,
+                        epochs=25,
+                        batch_size=batch_size,
+                        validation_data=(validation_data, validation_labels))
+    model.save_weights('/mnt/saves/bottleneck_fc_model_amsgrad.h5')
+    history_dict = history.history
+    json.dump(history_dict, open("/mnt/saves/bottleneck_history_amsgrad.json",
+                                 'w'))
 
 ##############################################################################
 #                              FineTune ResNet18                             #
