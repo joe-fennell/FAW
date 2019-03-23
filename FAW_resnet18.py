@@ -224,7 +224,8 @@ validation_datagen = ImageDataGenerator(preprocessing_function=preprocess)
 
 train_iterator = get_iterator(train_datagen, train_dir, class_mode='binary')
 
-validation_iterator = get_iterator(validation_dir, class_mode='binary')
+validation_iterator = get_iterator(validation_datagen,
+                                   validation_dir, class_mode='binary')
 
 # fine-tune the model
 history = model.fit_generator(train_iterator,
