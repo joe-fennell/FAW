@@ -118,14 +118,15 @@ bottleneck_features_train = model.predict_generator(train_iter,
                                                     (nb_train_samples //
                                                      batch_size))
 # save the output as a Numpy array
-np.save('bottleneck_features_train_amsgrad.npy', bottleneck_features_train)
+np.save('/mnt/bottleneck_features_train_amsgrad.npy',
+        bottleneck_features_train)
 
 input("Saved train features.")
 
 bottleneck_features_validation = model.predict_generator(valid_iter,
                                                          (nb_validation_samples
                                                           // batch_size))
-np.save('bottleneck_features_validation_amsgrad.npy',
+np.save('/mnt/bottleneck_features_validation_amsgrad.npy',
         bottleneck_features_validation)
 
 input("Saved validation features.")
@@ -137,7 +138,7 @@ train_iter_top = get_iterator(datagen_top, train_dir, class_mode='categorical')
 num_classes = len(train_iter_top.class_indices)
 
 # load the bottleneck features saved earlier
-train_data = np.load('bottleneck_features_train_amsgrad.npy')
+train_data = np.load('/mnt/saves/bottleneck_features_train_amsgrad.npy')
 
 # get the class lebels for the training data, in the original order
 train_labels = train_iter_top.classes
@@ -146,7 +147,8 @@ valid_iter_top = get_iterator(datagen_top, validation_dir)
 
 # nb_validation_samples = len(generator_top.filenames)
 
-validation_data = np.load('bottleneck_features_validation_amsgrad.npy')
+validation_data = np.load(
+    '/mnt/saves/bottleneck_features_validation_amsgrad.npy')
 
 validation_labels = valid_iter_top.classes
 
@@ -165,9 +167,10 @@ history = model.fit(train_data, train_labels,
                     epochs=25,
                     batch_size=batch_size,
                     validation_data=(validation_data, validation_labels))
-model.save_weights('/mnt/bottleneck_fc_model_amsgrad.h5')
+model.save_weights('/mnt/saves/bottleneck_fc_model_amsgrad.h5')
 history_dict = history.history
-json.dump(history_dict, open("/mnt/bottleneck_history_amsgrad.json", 'w'))
+json.dump(history_dict, open("/mnt/saves/bottleneck_history_amsgrad.json",
+                             'w'))
 
 ##############################################################################
 #                              FineTune ResNet18                             #
@@ -184,7 +187,7 @@ fullyconnected_model.add(Dense(1024, activation='relu'))
 fullyconnected_model.add(Dropout(0.5))
 fullyconnected_model.add(Dense(1, activation='sigmoid'))
 
-fullyconnected_model.load_weights('/mnt/bottleneck_fc_model_amsgrad.h5')
+fullyconnected_model.load_weights('/mnt/saves/bottleneck_fc_model_amsgrad.h5')
 
 model = models.Model(inputs=base_model.input,
                      outputs=fullyconnected_model(base_model.output))
@@ -220,8 +223,9 @@ history = model.fit_generator(train_iterator,
                               validation_steps=(nb_validation_samples //
                                                 batch_size))
 
-model.save_weights('/mnt/resnet18_fintunning_1_model_adadelta.h5')
+model.save_weights('/mnt/saves/resnet18_fintunning_1_model_adadelta.h5')
 history_dict = history.history
 json.dump(history_dict,
-          open("/mnt/finetunning_history_amsgrad_amsgrad_lr00001.json", 'w'))
+          open("/mnt/saves/finetunning_history_amsgrad_amsgrad_lr00001.json",
+               'w'))
 print('model fit complete')
