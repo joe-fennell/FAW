@@ -120,6 +120,7 @@ bottleneck_features_train = model.predict_generator(train_iter,
 # save the output as a Numpy array
 np.save('bottleneck_features_train_amsgrad.npy', bottleneck_features_train)
 
+input("Saved train features.")
 
 bottleneck_features_validation = model.predict_generator(valid_iter,
                                                          (nb_validation_samples
@@ -127,6 +128,7 @@ bottleneck_features_validation = model.predict_generator(valid_iter,
 np.save('bottleneck_features_validation_amsgrad.npy',
         bottleneck_features_validation)
 
+input("Saved validation features.")
 
 datagen_top = ImageDataGenerator()
 train_iter_top = get_iterator(datagen_top, train_dir, class_mode='categorical')
