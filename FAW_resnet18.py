@@ -117,43 +117,36 @@ valid_iter = get_iterator(datagen, validation_dir)
 model = ResNet18(input_shape=(img_width, img_height, 3), weights='imagenet',
                  include_top=False)
 
+# get a numpy array of predictions from the train data
 bottleneck_features_train = model.predict_generator(train_iter,
                                                     (nb_train_samples //
                                                      batch_size))
-# save the output as a Numpy array
 np.save('/mnt/saves/bottleneck_features_train_amsgrad.npy',
         bottleneck_features_train)
-
 input("Saved train features.")
 
+# get a numpy array of predictions from the validation data
 bottleneck_features_validation = model.predict_generator(valid_iter,
                                                          (nb_validation_samples
                                                           // batch_size))
 np.save('/mnt/saves/bottleneck_features_validation_amsgrad.npy',
         bottleneck_features_validation)
-
 input("Saved validation features.")
 
+# get the number of classes and their labels in original order
 datagen_top = ImageDataGenerator()
 train_iter_top = get_iterator(datagen_top, train_dir, class_mode='categorical')
-
-# nb_train_samples = len(generator_top.filenames)
+valid_iter_top = get_iterator(datagen_top, validation_dir)
+train_labels = train_iter_top.classes
+validation_labels = valid_iter_top.classes
 num_classes = len(train_iter_top.class_indices)
 
 # load the bottleneck features saved earlier
-train_data = np.load('/mnt/saves/bottleneck_features_train_amsgrad.npy')
-
-# get the class lebels for the training data, in the original order
-train_labels = train_iter_top.classes
-
-valid_iter_top = get_iterator(datagen_top, validation_dir)
+train_data = bottleneck_features_train
+validation_data = bottleneck_features_validation
 
 # nb_validation_samples = len(generator_top.filenames)
-
-validation_data = np.load(
-    '/mnt/saves/bottleneck_features_validation_amsgrad.npy')
-
-validation_labels = valid_iter_top.classes
+# nb_train_samples = len(generator_top.filenames)
 
 model = Sequential()
 model.add(Flatten(input_shape=train_data.shape[1:]))
@@ -183,6 +176,9 @@ json.dump(history_dict, open("/mnt/saves/bottleneck_history_amsgrad.json",
 base_model = ResNet18(input_shape=(img_width, img_height, 3),
                       weights='imagenet', include_top=False)
 
+for layer in base_model.layers[:-4]:
+    layer.trainable = False
+
 # Create a model
 fullyconnected_model = Sequential()
 fullyconnected_model.add(Flatten(input_shape=base_model.output_shape[1:]))
@@ -198,9 +194,6 @@ model = models.Model(inputs=base_model.input,
 # NOTE: Should this trainable modifier not be just for the base model?
 # Otherwise it may make only the top two layers of the 'model' trainable, as
 # opposed to the top two layers of the 'base_model' trainable.
-
-for layer in model.layers[:-2]:
-    layer.trainable = False
 
 for layer in model.layers:
     print(layer, layer.trainable)
