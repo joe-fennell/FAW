@@ -2,6 +2,9 @@
 
 # TODO: investigate different image segmentation / preprocessing options
 # TODO: investigate whether we can avoid hard coded image dimensions
+# TODO: investigate NOTE on model setup in last section. Print layer.trainable
+# for all to inspect whether this may be true.
+# TODO: update keras version within simg
 
 
 import tensorflow as tf
@@ -192,8 +195,17 @@ fullyconnected_model.load_weights('/mnt/saves/bottleneck_fc_model_amsgrad.h5')
 model = models.Model(inputs=base_model.input,
                      outputs=fullyconnected_model(base_model.output))
 
+# NOTE: Should this trainable modifier not be just for the base model?
+# Otherwise it may make only the top two layers of the 'model' trainable, as
+# opposed to the top two layers of the 'base_model' trainable.
+
 for layer in model.layers[:-2]:
     layer.trainable = False
+
+for layer in model.layers:
+    print(layer, layer.trainable)
+
+input("Printed layers and trainable status.")
 
 adam = keras.optimizers.Adam(lr=0.00001, amsgrad=True)
 model.compile(optimizer=adam,
