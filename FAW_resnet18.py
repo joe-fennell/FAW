@@ -118,7 +118,7 @@ bottleneck_features_train = model.predict_generator(train_iter,
                                                     (nb_train_samples //
                                                      batch_size))
 # save the output as a Numpy array
-np.save('/mnt/bottleneck_features_train_amsgrad.npy',
+np.save('/mnt/saves/bottleneck_features_train_amsgrad.npy',
         bottleneck_features_train)
 
 input("Saved train features.")
@@ -126,7 +126,7 @@ input("Saved train features.")
 bottleneck_features_validation = model.predict_generator(valid_iter,
                                                          (nb_validation_samples
                                                           // batch_size))
-np.save('/mnt/bottleneck_features_validation_amsgrad.npy',
+np.save('/mnt/saves/bottleneck_features_validation_amsgrad.npy',
         bottleneck_features_validation)
 
 input("Saved validation features.")
