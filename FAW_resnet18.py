@@ -125,16 +125,18 @@ if recalculate == 'y':
     bottleneck_features_train = model.predict_generator(train_iter,
                                                         (nb_train_samples //
                                                          batch_size))
-    np.save('/mnt/saves/bottleneck_features_train_amsgrad.npy',
-            bottleneck_features_train)
+    # NOTE: remove these if not needed
+    # np.save('/mnt/saves/bottleneck_features_train_amsgrad.npy',
+    #        bottleneck_features_train)
 
     # get a numpy array of predictions from the validation data
     bottleneck_features_validation = model.predict_generator(
         valid_iter,
         (nb_validation_samples
          // batch_size))
-    np.save('/mnt/saves/bottleneck_features_validation_amsgrad.npy',
-            bottleneck_features_validation)
+    # NOTE: remove these if not needed
+    # np.save('/mnt/saves/bottleneck_features_validation_amsgrad.npy',
+    #        bottleneck_features_validation)
 
     # get the number of classes and their labels in original order
     datagen_top = ImageDataGenerator()
