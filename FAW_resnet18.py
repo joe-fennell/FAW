@@ -127,7 +127,6 @@ if recalculate == 'y':
                                                          batch_size))
     np.save('/mnt/saves/bottleneck_features_train_amsgrad.npy',
             bottleneck_features_train)
-    input("Saved train features.")
 
     # get a numpy array of predictions from the validation data
     bottleneck_features_validation = model.predict_generator(
@@ -136,7 +135,6 @@ if recalculate == 'y':
          // batch_size))
     np.save('/mnt/saves/bottleneck_features_validation_amsgrad.npy',
             bottleneck_features_validation)
-    input("Saved validation features.")
 
     # get the number of classes and their labels in original order
     datagen_top = ImageDataGenerator()
@@ -203,8 +201,6 @@ model = models.Model(inputs=base_model.input,
 
 for layer in model.layers:
     print(layer, layer.trainable)
-
-input("Printed layers and trainable status.")
 
 adam = keras.optimizers.Adam(lr=0.00001, amsgrad=True)
 model.compile(optimizer=adam,
