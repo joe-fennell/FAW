@@ -165,6 +165,8 @@ if recalculate == 'y':
                   loss='binary_crossentropy',
                   metrics=['accuracy'])
 
+    input("ready to start FC training.")
+
     history = model.fit(train_data, train_labels,
                         epochs=25,
                         batch_size=batch_size,
