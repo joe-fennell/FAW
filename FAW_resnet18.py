@@ -37,7 +37,7 @@ def get_num_samples(path):
 
     """Finds the number of .jpg samples in a given dir."""
 
-    find_str = path + '**/*.jpg'
+    find_str = path + '/**/*.jpg'
     num_jpgs = len(glob.glob(find_str, recursive=True))
 
     return num_jpgs
