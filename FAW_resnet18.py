@@ -207,7 +207,7 @@ if recalculate == 'y':
                         validation_data=(validation_data, validation_labels))
     model.save_weights('/mnt/saves/bottleneck_fc_model_amsgrad.h5')
     history_dict = history.history
-    save = 'mnt/saves/{}_bottleneck_history_amsgrad.json'.format(test_number)
+    save = '/mnt/saves/{}_bottleneck_history_amsgrad.json'.format(test_number)
     json.dump(history_dict, open(save, 'w'))
 
 ##############################################################################
@@ -268,7 +268,7 @@ history = model.fit_generator(train_iterator,
 
 model.save_weights('/mnt/saves/resnet18_fintunning_1_model_adadelta.h5')
 history_dict = history.history
-save = 'mnt/saves/{}_finetuning_history_amsgrad_lr00001.json'.format(
+save = '/mnt/saves/{}_finetuning_history_amsgrad_lr00001.json'.format(
     test_number)
 json.dump(history_dict, open(save, 'w'))
 
