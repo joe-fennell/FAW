@@ -32,15 +32,16 @@ set_session(tf.Session(config=config))
 #                      Define useful variables                               #
 ##############################################################################
 
+
 def get_num_samples(path):
 
     """Finds the number of .jpg samples in a given dir."""
 
     find_str = path + '**/*.jpg'
-
     num_jpgs = len(glob.glob(find_str, recursive=True))
 
     return num_jpgs
+
 
 def get_test_number():
 
@@ -50,15 +51,16 @@ def get_test_number():
     test_number = input("Please enter the test number: ")
 
     while len(test_number) < 4:
-        test_number = '0' + test number # uniform length test number XXXX
+        test_number = '0' + test_number  # uniform length test number XXXX
 
     json_saves = list(glob.glob('saves/*.json'))
 
     for save in json_saves:
-        if test_number in save:
+        if test_number in save[:10]:  # avoid learning rate / test number clash
             raise ValueError("Test number already exists in save files.")
 
     return test_number
+
 
 # load in k-means image segmentation made in jupyter notebook
 kmeans_3clusters = pickle.load(open('/mnt/kmeans_224.sav', 'rb'))
@@ -71,13 +73,16 @@ batch_size = 1
 img_width, img_height = 224, 224
 
 nb_train_samples = get_num_samples(train_dir)
-nb_validation_samples = get_num_samples(validation_dir) 
+nb_validation_samples = get_num_samples(validation_dir)
+
+num_trainable_layers = 4
 
 test_number = get_test_number()
 
 ##############################################################################
 #                      Preprocessing Functions                               #
 ##############################################################################
+
 
 def predict(data, model, number_segments=2000):
     """ returns label image"""
@@ -213,7 +218,6 @@ if recalculate == 'y':
 base_model = ResNet18(input_shape=(img_width, img_height, 3),
                       weights='imagenet', include_top=False)
 
-
 # Create a model
 fullyconnected_model = Sequential()
 fullyconnected_model.add(Flatten(input_shape=base_model.output_shape[1:]))
@@ -264,7 +268,8 @@ history = model.fit_generator(train_iterator,
 
 model.save_weights('/mnt/saves/resnet18_fintunning_1_model_adadelta.h5')
 history_dict = history.history
-save = 'mnt/saves/{}_finetuning_history_amsgrad_lr00001.json'.format(test_number)
+save = 'mnt/saves/{}_finetuning_history_amsgrad_lr00001.json'.format(
+    test_number)
 json.dump(history_dict, open(save, 'w'))
 
 print('model fit complete')
