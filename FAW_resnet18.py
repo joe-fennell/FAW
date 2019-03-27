@@ -13,6 +13,7 @@ import pandas as pd
 import pickle
 import numpy as np
 import json
+import glob
 from keras.backend.tensorflow_backend import set_session
 from keras.preprocessing.image import ImageDataGenerator
 from keras import models
@@ -31,6 +32,34 @@ set_session(tf.Session(config=config))
 #                      Define useful variables                               #
 ##############################################################################
 
+def get_num_samples(path):
+
+    """Finds the number of .jpg samples in a given dir."""
+
+    find_str = path + '**/*.jpg'
+
+    num_jpgs = len(glob.glob(find_str, recursive=True))
+
+    return num_jpgs
+
+def get_test_number():
+
+    """Gets the test number from the user and checks to see if such a test
+    already exits. Returns a `str` of length 4 representing the test number."""
+
+    test_number = input("Please enter the test number: ")
+
+    while len(test_number) < 4:
+        test_number = '0' + test number # uniform length test number XXXX
+
+    json_saves = list(glob.glob('saves/*.json'))
+
+    for save in json_saves:
+        if test_number in save:
+            raise ValueError("Test number already exists in save files.")
+
+    return test_number
+
 # load in k-means image segmentation made in jupyter notebook
 kmeans_3clusters = pickle.load(open('/mnt/kmeans_224.sav', 'rb'))
 
@@ -41,9 +70,14 @@ validation_dir = '/mnt/data/validation'
 batch_size = 1
 img_width, img_height = 224, 224
 
-nb_train_samples = 1130
-nb_validation_samples = 280
+nb_train_samples = get_num_samples(train_dir)
+nb_validation_samples = get_num_samples(validation_dir) 
 
+test_number = get_test_number()
+
+##############################################################################
+#                      Preprocessing Functions                               #
+##############################################################################
 
 def predict(data, model, number_segments=2000):
     """ returns label image"""
@@ -151,9 +185,6 @@ if recalculate == 'y':
     train_data = bottleneck_features_train
     validation_data = bottleneck_features_validation
 
-    # nb_validation_samples = len(generator_top.filenames)
-    # nb_train_samples = len(generator_top.filenames)
-
     model = Sequential()
     model.add(Flatten(input_shape=train_data.shape[1:]))
     model.add(Dense(1024, activation='relu'))
@@ -165,16 +196,14 @@ if recalculate == 'y':
                   loss='binary_crossentropy',
                   metrics=['accuracy'])
 
-    input("ready to start FC training.")
-
     history = model.fit(train_data, train_labels,
                         epochs=25,
                         batch_size=batch_size,
                         validation_data=(validation_data, validation_labels))
     model.save_weights('/mnt/saves/bottleneck_fc_model_amsgrad.h5')
     history_dict = history.history
-    json.dump(history_dict, open("/mnt/saves/bottleneck_history_amsgrad.json",
-                                 'w'))
+    save = 'mnt/saves/{}_bottleneck_history_amsgrad.json'.format(test_number)
+    json.dump(history_dict, open(save, 'w'))
 
 ##############################################################################
 #                              FineTune ResNet18                             #
@@ -184,8 +213,6 @@ if recalculate == 'y':
 base_model = ResNet18(input_shape=(img_width, img_height, 3),
                       weights='imagenet', include_top=False)
 
-for layer in base_model.layers[:-4]:
-    layer.trainable = False
 
 # Create a model
 fullyconnected_model = Sequential()
@@ -199,9 +226,9 @@ fullyconnected_model.load_weights('/mnt/saves/bottleneck_fc_model_amsgrad.h5')
 model = models.Model(inputs=base_model.input,
                      outputs=fullyconnected_model(base_model.output))
 
-# NOTE: Should this trainable modifier not be just for the base model?
-# Otherwise it may make only the top two layers of the 'model' trainable, as
-# opposed to the top two layers of the 'base_model' trainable.
+
+for layer in base_model.layers[:-num_trainable_layers]:
+    layer.trainable = False
 
 for layer in model.layers:
     print(layer, layer.trainable)
@@ -237,7 +264,7 @@ history = model.fit_generator(train_iterator,
 
 model.save_weights('/mnt/saves/resnet18_fintunning_1_model_adadelta.h5')
 history_dict = history.history
-json.dump(history_dict,
-          open("/mnt/saves/finetunning_history_amsgrad_amsgrad_lr00001.json",
-               'w'))
+save = 'mnt/saves/{}_finetuning_history_amsgrad_lr00001.json'.format(test_number)
+json.dump(history_dict, open(save, 'w'))
+
 print('model fit complete')
