@@ -2,8 +2,6 @@
 
 # TODO: investigate different image segmentation / preprocessing options
 # TODO: investigate whether we can avoid hard coded image dimensions
-# TODO: investigate NOTE on model setup in last section. Print layer.trainable
-# for all to inspect whether this may be true.
 # TODO: update keras version within simg
 
 
@@ -56,7 +54,7 @@ def get_test_number():
     json_saves = list(glob.glob('saves/*.json'))
 
     for save in json_saves:
-        if test_number in save[:10]:  # avoid learning rate / test number clash
+        if test_number in save[:4]:  # avoid learning rate / test number clash
             raise ValueError("Test number already exists in save files.")
 
     return test_number
@@ -75,7 +73,8 @@ img_width, img_height = 224, 224
 nb_train_samples = get_num_samples(train_dir)
 nb_validation_samples = get_num_samples(validation_dir)
 
-num_trainable_layers = 4
+num_trainable_layers = 3
+CNN_lr = 0.00001  # learning rate for the network
 
 test_number = get_test_number()
 
@@ -237,7 +236,7 @@ for layer in base_model.layers[:-num_trainable_layers]:
 for layer in model.layers:
     print(layer, layer.trainable)
 
-adam = keras.optimizers.Adam(lr=0.00001, amsgrad=True)
+adam = keras.optimizers.Adam(lr=CNN_lr, amsgrad=True)
 model.compile(optimizer=adam,
               loss='binary_crossentropy',
               metrics=['accuracy'])
@@ -268,8 +267,8 @@ history = model.fit_generator(train_iterator,
 
 model.save_weights('/mnt/saves/resnet18_fintunning_1_model_adadelta.h5')
 history_dict = history.history
-save = '/mnt/saves/{}_finetuning_history_amsgrad_lr00001.json'.format(
-    test_number)
+save = '/mnt/saves/{}_finetuning_history_amsgrad_lr{}.json'.format(
+    test_number, str(CNN_lr)[2:])
 json.dump(history_dict, open(save, 'w'))
 
 print('model fit complete')
