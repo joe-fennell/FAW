@@ -73,7 +73,7 @@ img_width, img_height = 224, 224
 nb_train_samples = get_num_samples(train_dir)
 nb_validation_samples = get_num_samples(validation_dir)
 
-num_trainable_layers = 3
+num_trainable_layers = 2
 CNN_lr = 0.00001  # learning rate for the network
 
 test_number = get_test_number()
