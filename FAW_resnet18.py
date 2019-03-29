@@ -268,7 +268,7 @@ history = model.fit_generator(train_iterator,
 model.save_weights('/mnt/saves/resnet18_fintunning_1_model_adadelta.h5')
 history_dict = history.history
 save = '/mnt/saves/{}_finetuning_history_amsgrad_lr{}.json'.format(
-    test_number, str(CNN_lr)[2:])
+    test_number, str(CNN_lr))
 json.dump(history_dict, open(save, 'w'))
 
 print('model fit complete')
