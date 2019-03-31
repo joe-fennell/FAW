@@ -3,6 +3,7 @@
 # TODO: investigate different image segmentation / preprocessing options
 # TODO: investigate whether we can avoid hard coded image dimensions
 # TODO: update keras version within simg
+# TODO: implement argparse for test number and recalculating of weights
 
 
 import tensorflow as tf
@@ -73,8 +74,8 @@ img_width, img_height = 224, 224
 nb_train_samples = get_num_samples(train_dir)
 nb_validation_samples = get_num_samples(validation_dir)
 
-num_trainable_layers = 2
-CNN_lr = 0.00001  # learning rate for the network
+num_trainable_layers = 4
+CNN_lr = 0.000001  # learning rate for the network
 
 test_number = get_test_number()
 
