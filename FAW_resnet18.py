@@ -74,7 +74,7 @@ img_width, img_height = 224, 224
 nb_train_samples = get_num_samples(train_dir)
 nb_validation_samples = get_num_samples(validation_dir)
 
-num_trainable_layers = 2
+num_trainable_layers = 1
 CNN_lr = 0.000001  # learning rate for the network
 
 test_number = get_test_number()
@@ -266,7 +266,9 @@ history = model.fit_generator(train_iterator,
                               validation_steps=(nb_validation_samples //
                                                 batch_size))
 
-model.save_weights('/mnt/saves/resnet18_fintunning_1_model_adadelta.h5')
+model.save_weights('/mnt/saves/' +
+                   '{}_resnet18_fintunning_1_model_adadelta.h5'.format(
+                       test_number))
 history_dict = history.history
 save = '/mnt/saves/{}_finetuning_history_amsgrad_lr{}.json'.format(
     test_number, str(CNN_lr))
