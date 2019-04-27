@@ -24,7 +24,7 @@ for data_dir in data_dirs:
         for img in imgs:
             try:
                 cropped_img = imagecheck.crop(str(img))
-            except ImageCheckError as e:
+            except imagecheck.ImageCheckError as e:
                 continue  # skip ahead for images that don't pass
             if data_dir is 'train':
                 new_dir = new_dirs[0]
