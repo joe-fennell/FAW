@@ -14,7 +14,7 @@ import cv2 as cv
 
 data_dirs = ['train/', 'validation/']
 categories = ['faw/', 'notfaw/']
-new_dirs = ['train_cropped/', 'validation_cropped']
+new_dirs = ['train_cropped/', 'validation_cropped/']
 
 for data_dir in data_dirs:
     for category in categories:
@@ -31,7 +31,7 @@ for data_dir in data_dirs:
                 new_dir = new_dirs[0]
             else:
                 new_dir = new_dirs[1]
-            new_loc = '/mnt/data/' + new_dir + category + img.name
+            new_loc = '/mnt/data/' + new_dir + category + str(img.name)
             cv.imwrite(new_loc, cropped_img)
 
 
