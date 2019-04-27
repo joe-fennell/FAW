@@ -174,7 +174,7 @@ def _contour_sorting(contours, hierarchy, pixels, h, w):
         return contours_accepted[0]
 
     # get relative path for model loads to resolve issues with file locations
-    base_path = pathlib.Path(__file__).parent
+    base_path = str(pathlib.Path(__file__).parent)
     contour_mlp = pickle.load(open(base_path + '/mlp_ForContoursPCA6.sav',
                                    'rb'))
     contour_pca = pickle.load(open(base_path + '/ContoursPCA6.sav', 'rb'))
