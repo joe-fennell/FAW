@@ -10,6 +10,7 @@ imagecheck/imagecheck.py to filter and crop data.
 
 import pathlib 
 import imagecheck
+import cv2 as cv
 
 data_dirs = ['train/', 'validation/']
 categories = ['faw/', 'notfaw/']
@@ -17,11 +18,18 @@ new_dirs = ['train_cropped/', 'validation_cropped']
 
 for data_dir in data_dirs:
     for category in categories:
-        loc_str = '../FAW/data/' + data_dir + category
-        path = Path(loc_str)
+        loc_str = '/mnt/data/' + data_dir + category
+        path = pathlib.Path(loc_str)
         imgs = list(path.glob('*.jpg'))
         for img in imgs:
-            print(img)
+            cropped_img = imagecheck.crop(img)
+            if data_dir is 'train':
+                new_dir = new_dirs[0]
+            else:
+                new_dir = new_dirs[1]
+            new_loc = '/mnt/data/' + new_dir + category + img.name
+            cv.imwrite(new_loc, cropped_img)
+
 
 
 
