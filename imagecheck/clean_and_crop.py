@@ -32,6 +32,7 @@ for data_dir in data_dirs:
             else:
                 new_dir = new_dirs[1]
             new_loc = '/mnt/data/' + new_dir + category + str(img.name)
+            print(new_loc)
             cv.imwrite(new_loc, cropped_img)
 
 
