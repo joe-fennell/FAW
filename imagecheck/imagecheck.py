@@ -136,7 +136,6 @@ def _plot_contours(img, contours, h, w, scale_ratio):
 
 
 def _contour_sorting(contours, hierarchy, pixels, h, w):
-
     """Finds the worm contour from a list of contours and a hierarchy using MLP
     classifier..
         - Rejects contours of less than 1% total pixel area.
@@ -199,13 +198,11 @@ def _contour_sorting(contours, hierarchy, pixels, h, w):
     raise ImageCheckError("More than one potential worm contour found.")
 
 
-def check_image(img_location):
-
-    # TODO: edit this description when finished
+def crop(img_location):
     """Finds parent contours in an image, gets shape factors for those contours
     then crops the image to the area of interest containing the worm.
 
-    If image given is larger than 800 x 800 or equivalent, scales the image
+    If image given is larger than 224 x 224 or equivalent, scales the image
     down for preprocesing and then crops the original.
 
     Contour detection notes:
@@ -214,6 +211,24 @@ def check_image(img_location):
 
     Checks the image to see if it conforms to:
         - A preset blur threshold
+
+    Parameters
+    ----------
+    img_location : str
+        String containing the location of the image file.
+
+    Returns
+    -------
+    numpy.array
+        Contains the cropped image as a an array of shape (h, w, 3).
+
+    Raises
+    ------
+    ImageCheckError
+        Any image rejections (border contours, blur, no worm etc.) raise this
+        error with relevant error message.
+
+
     """
 
     img = cv.imread(img_location)
@@ -302,7 +317,7 @@ if __name__ == "__main__":
         print(img)
         print('{} / {}'.format(i, len(imgs)))
         try:
-            crop_img = check_image(img)
+            crop_img = crop(img)
         except ImageCheckError as e:
             print(e)
         i += 1
