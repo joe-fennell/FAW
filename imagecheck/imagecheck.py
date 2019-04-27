@@ -21,6 +21,7 @@ threshold.
 import glob
 import pickle
 import math
+import pathlib
 import numpy as np
 import cv2 as cv
 from sklearn.cluster import MiniBatchKMeans
@@ -172,8 +173,11 @@ def _contour_sorting(contours, hierarchy, pixels, h, w):
     if len(contours_accepted) == 1:
         return contours_accepted[0]
 
-    contour_mlp = pickle.load(open('mlp_ForContoursPCA6.sav', 'rb'))
-    contour_pca = pickle.load(open('ContoursPCA6.sav', 'rb'))
+    # get relative path for model loads to resolve issues with file locations
+    base_path = pathlib.Path(__file__).parent
+    contour_mlp = pickle.load(open(base_path + '/mlp_ForContoursPCA6.sav',
+                                   'rb'))
+    contour_pca = pickle.load(open(base_path + '/ContoursPCA6.sav', 'rb'))
 
     worm_contours = []
 
