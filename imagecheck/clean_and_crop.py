@@ -22,7 +22,7 @@ for data_dir in data_dirs:
         path = pathlib.Path(loc_str)
         imgs = list(path.glob('*.jpg'))
         for img in imgs:
-            cropped_img = imagecheck.crop(img)
+            cropped_img = imagecheck.crop(str(img))
             if data_dir is 'train':
                 new_dir = new_dirs[0]
             else:
