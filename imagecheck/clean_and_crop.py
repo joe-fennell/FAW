@@ -22,6 +22,7 @@ for data_dir in data_dirs:
         path = pathlib.Path(loc_str)
         imgs = list(path.glob('*.jpg'))
         for img in imgs:
+            print(img)
             try:
                 cropped_img = imagecheck.crop(str(img))
             except imagecheck.ImageCheckError as e:
