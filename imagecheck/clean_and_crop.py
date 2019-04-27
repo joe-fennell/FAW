@@ -16,18 +16,24 @@ data_dirs = ['train/', 'validation/']
 categories = ['faw/', 'notfaw/']
 new_dirs = ['train_cropped/', 'validation_cropped/']
 
+rejected = 0
+total = 0
+
 for data_dir in data_dirs:
     for category in categories:
         loc_str = '/mnt/data/' + data_dir + category
         path = pathlib.Path(loc_str)
         imgs = list(path.glob('*.jpg'))
         for img in imgs:
+            total += 1
             print(img)
             try:
                 cropped_img = imagecheck.crop(str(img))
             except imagecheck.ImageCheckError as e:
+                rejected += 1
+                print(e)
                 continue  # skip ahead for images that don't pass
-            if data_dir is 'train':
+            if data_dir is 'train/':
                 new_dir = new_dirs[0]
             else:
                 new_dir = new_dirs[1]
@@ -35,6 +41,6 @@ for data_dir in data_dirs:
             print(new_loc)
             cv.imwrite(new_loc, cropped_img)
 
-
+print('Total rejected = {} / {} = '.format(rejected, total, rejected/total))
 
 
