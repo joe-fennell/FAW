@@ -41,6 +41,6 @@ for data_dir in data_dirs:
             print(new_loc)
             cv.imwrite(new_loc, cropped_img)
 
-print('Total rejected = {} / {} = '.format(rejected, total, rejected/total))
+print('Total rejected = {} / {} = {}'.format(rejected, total, rejected/total))
 
 
