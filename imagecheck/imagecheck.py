@@ -1,27 +1,26 @@
 """
-segmentation.py
+Fall Armyworm Project - University of Manchester
+Author: George Worrall
 
-Script to segment foreground objects from (mostly) uniform background with
-variable lighting. Also detects and rejects images with multiple foreground
-objects.
+imagecheck.py
+
+Script to segment worm foreground objects from (mostly) uniform background.
+
+Outputs cropped image from original containing only the detected worm.
+
+For images with multiple foreground objects, script uses trained MLP to guess
+which is the worm by computing size-independent shape factors.
+Also performs blur check on images to ensure they are above a predefined blur
+threshold.
 """
 
 # TODO: consider drawing box on live feed on phone and asking users to take a
 # picture with the caterpillar inside the specific box. Reject image if any
 # contours outside the box (would require uniform background).
 
-# TODO: look at real time identification in phone before picture is taken
-
-# TODO: CONSIDER recalucating shape factors with very minimal erosion and
-# dilation to retain more of the orignal shape. May help to differentiate
-# between worms and non worms
-
-# TODO: look at low cost CNNs and other options for classifying if contour is a
-# caterpillar. Possibly faster R CNN
-
-
 import glob
-import json
+import pickle
+import math
 import numpy as np
 import cv2 as cv
 from sklearn.cluster import MiniBatchKMeans
@@ -118,14 +117,14 @@ def _plot_contours(img, contours, h, w, scale_ratio):
 
     for contour in contours:
         br_dims = cv.boundingRect(contour)
-        scld = [int(i * scale_ratio) for i in br_dims]
+        scld = [int(i / scale_ratio) for i in br_dims]
         # add 2% buffer to prevent minor clipping of AOI
         (h, w) = img.shape[:2]
         scld[0] = scld[0] - int(2 * w / 100)  # x value base
         scld[1] = scld[1] - int(2 * h / 100)  # y value base
         scld[2] = scld[2] + int(4 * w / 100)  # x width
         scld[3] = scld[3] + int(4 * h / 100)  # y width
-        scld = [1 if x < 0 else x for x in scld]  # no neg buffer pixel values
+        scld = [0 if x < 0 else x for x in scld]  # no neg buffer pixel values
         cv.rectangle(img, (scld[0], scld[1]),
                      (scld[0]+scld[2], scld[1]+scld[3]), (255, 0, 0), 4)
 
@@ -134,6 +133,70 @@ def _plot_contours(img, contours, h, w, scale_ratio):
     cv.resizeWindow('check', 800, 800)
     cv.waitKey(0)
     cv.destroyAllWindows()
+
+
+def _contour_sorting(contours, hierarchy, pixels, h, w):
+
+    """Finds the worm contour from a list of contours and a hierarchy using MLP
+    classifier..
+        - Rejects contours of less than 1% total pixel area.
+        - Rejects any contours which are touching the image border."""
+
+    # get all parents contours in heirarchy
+    # https://opencv-python-tutroals.readthedocs.io/en/latest
+    # /py_tutorials/py_imgproc/py_contours/py_contours_hierarchy
+    # /py_contours_hierarchy.html
+    hierarchy = hierarchy.tolist()
+    parent_contours = [contours[hierarchy[0].index(x)]
+                       for x in hierarchy[0] if x[3] == -1]
+
+    # ignore any contours that touch the image border or are too small
+    contours_accepted = []
+    for contour in parent_contours:
+        if cv.contourArea(contour) < (pixels/100):
+            # ignore contours of > 1% pixel area
+            continue
+        x_coords = contour[:, :, 0].flatten()
+        y_coords = contour[:, :, 1].flatten()
+        if (0 in x_coords) or (0 in y_coords):  # reject border pixel values
+            continue
+        if (w - 1) in x_coords:
+            continue
+        if (h - 1) in y_coords:
+            continue
+        contours_accepted.append(contour)
+
+    if len(contours_accepted) == 0:
+        raise ImageCheckError("No suitable foreground objects found.")
+
+    # NOTE: if only one parent contour, it is assume to be the worm
+    if len(contours_accepted) == 1:
+        shape_factors = _get_shape_factors(contours_accepted[0])
+        global factors_list
+        factors_list.append(shape_factors)
+        return contours_accepted[0]
+
+    contour_mlp = pickle.load(open('mlp_ForContoursPCA6.sav', 'rb'))
+    contour_pca = pickle.load(open('ContoursPCA6.sav', 'rb'))
+
+    worm_contours = []
+
+    for contour in contours_accepted:
+        shape_factors = _get_shape_factors(contour)
+        sf_pca = contour_pca.transform([shape_factors])
+        if contour_mlp.predict(sf_pca) == 1:
+            worm_contours.append(contour)
+
+    # TODO: add in user visual check option if multiple contours found so that
+    # use can choose which contour to  be classified should multiple pass the
+    # worm contour test above.
+    if len(worm_contours) == 1:
+        return worm_contours[0]
+
+    if len(worm_contours) == 0:
+        raise ImageCheckError("Zero potential worm contours identified.")
+
+    raise ImageCheckError("More than one potential worm contour found.")
 
 
 def check_image(img_location):
@@ -160,8 +223,8 @@ def check_image(img_location):
     (h, w) = img.shape[:2]
     pixels = h * w
     scale_ratio = 1
-    if pixels > 640000:  # 800 x 800 or similar dims size
-        scale_ratio = 640000 / pixels
+    if pixels > 50176:  # 224 x 224 or similar dims size
+        scale_ratio = math.sqrt(50176 / pixels)  # sqrt for dims scale ratio
         img, h, w = _downscale_image(img, scale_ratio)
         pixels = h * w
 
@@ -186,7 +249,7 @@ def check_image(img_location):
 
     # reject if codes could not be found, ie. picture is uniform colour
     if not fg_code:
-        return False
+        raise ImageCheckError("Could not locate any foreground objects.")
 
     if fg_code > bg_code:
         ret, thresh = cv.threshold(quant, fg_code - 1, 1, cv.THRESH_BINARY)
@@ -202,49 +265,10 @@ def check_image(img_location):
     contours, hierarchy = cv.findContours(img_closed.copy(), cv.RETR_TREE,
                                           cv.CHAIN_APPROX_SIMPLE)
 
-    # get all parents contours in heirarchy
-    # https://opencv-python-tutroals.readthedocs.io/en/latest
-    # /py_tutorials/py_imgproc/py_contours/py_contours_hierarchy
-    # /py_contours_hierarchy.html
-    hierarchy = hierarchy.tolist()
-    parent_contours = [contours[hierarchy[0].index(x)]
-                       for x in hierarchy[0] if x[3] == -1]
-
-    # ignore any contours that touch the image border or are too small
-    contours_accepted = []
-    for contour in parent_contours:
-        if cv.contourArea(contour) < (pixels/100):
-            # ignore contours of > 1% pixel area
-            continue
-        x_coords = contour[:, :, 0].flatten()
-        y_coords = contour[:, :, 1].flatten()
-        if (0 in x_coords) or (0 in y_coords):  # reject border pixel values
-            continue
-        if (w - 1) in x_coords:
-            continue
-        if (h - 1) in y_coords:
-            continue
-        contours_accepted.append(contour)
-
-    # reject if more than one foreground object or 0 found
-    if len(contours_accepted) > 1:
-        print("IMAGE REJECTED")
-        # _plot_contours(img_copy, parent_contours, h, w, scale_ratio)
-        # TODO: remove plot contours once finished
-        return False
-    if len(contours_accepted) == 0:
-        print("IMAGE border REJECTED")
-        # _plot_contours(img_copy, parent_contours, h, w, scale_ratio)
-        # TODO: remove plot contours once finished
-        return False
-
-    # TODO: set up combined factor extraction and classification
-    # factors = _get_shape_factors(contours_accepted[0])
-    # global factors_list
-    # factors_list.append(factors)
+    worm_contour = _contour_sorting(contours, hierarchy, pixels, h, w)
 
     # crop image to selection - need to upscale values to original dims
-    br_dims = cv.boundingRect(contours_accepted[0])
+    br_dims = cv.boundingRect(worm_contour)
     scld = [int(i / scale_ratio) for i in br_dims]
     # add 2% buffer to prevent minor clipping of AOI
     (h, w) = img_copy.shape[:2]
@@ -259,23 +283,26 @@ def check_image(img_location):
 
     # blur check
     if not _blur_check(crop_img):
-        print("Image blur rejected.")
-        return False
+        raise ImageCheckError("Image too blurry.")
 
     return crop_img
 
-#  Get all test files from worms dir.
-#
-# imgs = list(glob.glob('worms/**/*.jpg'))
-#
-# factors_list = []
-# i = 1
-# for img in imgs:
-#     print(img)
-#     print('{} / {}'.format(i, len(imgs)))
-#     check_image(img)
-#     print("Factor collections: {}".format(len(factors_list)))
-#     i += 1
-#
-# with open("worm_shapefactors.json", 'w') as fp:
-#     json.dump(factors_list, fp)
+
+class ImageCheckError(Exception):
+    """Used for custom error messages to do with image checking and
+    segmentation."""
+    pass
+
+
+if __name__ == "__main__":
+    imgs = list(glob.glob('../worms/**/*.jpg'))
+
+    i = 1
+    for img in imgs:
+        print(img)
+        print('{} / {}'.format(i, len(imgs)))
+        try:
+            crop_img = check_image(img)
+        except ImageCheckError as e:
+            print(e)
+        i += 1
