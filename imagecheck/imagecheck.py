@@ -170,9 +170,6 @@ def _contour_sorting(contours, hierarchy, pixels, h, w):
 
     # NOTE: if only one parent contour, it is assume to be the worm
     if len(contours_accepted) == 1:
-        shape_factors = _get_shape_factors(contours_accepted[0])
-        global factors_list
-        factors_list.append(shape_factors)
         return contours_accepted[0]
 
     contour_mlp = pickle.load(open('mlp_ForContoursPCA6.sav', 'rb'))
