@@ -18,6 +18,22 @@ threshold.
 # picture with the caterpillar inside the specific box. Reject image if any
 # contours outside the box (would require uniform background).
 
+# TODO: run a timeit on a single image check
+# NOTE: estimate is around 0.8 seconds a picture so no real time. 
+
+# TODO: look at raising custom errors for different contour rejection issues
+# which will be useful for user interface down the line
+
+# TODO: Iowa State Entymology images of fallarmy worm
+# NOTE: could only find one image, no image database as far as I can see.
+
+# TODO: look at report structure etc for something to give out on the project
+# on method, differenty design options considered etc.
+
+# TODO: look into basic phone app development on emulator
+# NOTE: now doing coursera online course from 0 to app development. working
+# protoype is feasable if I can work more (20+) hours or so a week on it.
+
 import glob
 import pickle
 import math
@@ -25,6 +41,10 @@ import pathlib
 import numpy as np
 import cv2 as cv
 from sklearn.cluster import MiniBatchKMeans
+
+# Globals
+SCALED_IMAGE_PIXELS = 50176  # 224 x 224 image pixels
+MORPH_KERNAL_RATIO = 0.01
 
 
 def _get_colour_codes(arr):
@@ -117,15 +137,7 @@ def _plot_contours(img, contours, h, w, scale_ratio):
     print("Contour count: {}".format(len(contours)))
 
     for contour in contours:
-        br_dims = cv.boundingRect(contour)
-        scld = [int(i / scale_ratio) for i in br_dims]
-        # add 2% buffer to prevent minor clipping of AOI
-        (h, w) = img.shape[:2]
-        scld[0] = scld[0] - int(2 * w / 100)  # x value base
-        scld[1] = scld[1] - int(2 * h / 100)  # y value base
-        scld[2] = scld[2] + int(4 * w / 100)  # x width
-        scld[3] = scld[3] + int(4 * h / 100)  # y width
-        scld = [0 if x < 0 else x for x in scld]  # no neg buffer pixel values
+        scld = _scale_dims(contour, img, scale_ratio)
         cv.rectangle(img, (scld[0], scld[1]),
                      (scld[0]+scld[2], scld[1]+scld[3]), (255, 0, 0), 4)
 
@@ -134,6 +146,22 @@ def _plot_contours(img, contours, h, w, scale_ratio):
     cv.resizeWindow('check', 800, 800)
     cv.waitKey(0)
     cv.destroyAllWindows()
+
+def _scale_dims(contour, img, scale_ratio):
+
+    # scale up dimensions according to scale ratio
+
+    br_dims = cv.boundingRect(contour)
+    scld = [int(i / scale_ratio) for i in br_dims]
+    # add 2% buffer to prevent minor clipping of AOI
+    (h, w) = img.shape[:2]
+    scld[0] = scld[0] - int(2 * w / 100)  # x value base
+    scld[1] = scld[1] - int(2 * h / 100)  # y value base
+    scld[2] = scld[2] + int(4 * w / 100)  # x width
+    scld[3] = scld[3] + int(4 * h / 100)  # y width
+    scld = [0 if x < 0 else x for x in scld]  # no neg buffer pixel values
+
+    return scld
 
 
 def _contour_sorting(contours, hierarchy, pixels, h, w):
@@ -239,8 +267,8 @@ def crop(img_location):
     (h, w) = img.shape[:2]
     pixels = h * w
     scale_ratio = 1
-    if pixels > 50176:  # 224 x 224 or similar dims size
-        scale_ratio = math.sqrt(50176 / pixels)  # sqrt for dims scale ratio
+    if pixels > SCALED_IMAGE_PIXELS:  # 224 x 224 or similar dims size
+        scale_ratio = math.sqrt(SCALED_IMAGE_PIXELS / pixels)  # sqrt for dims scale ratio
         img, h, w = _downscale_image(img, scale_ratio)
         pixels = h * w
 
@@ -274,7 +302,8 @@ def crop(img_location):
 
     # perform a small kernel closing operation to smooth noise around contour
     # edges - kernal size based on downscaled image dimensions
-    kernel = np.ones((int(h/100), int(h/100)), np.uint8)
+    kernel = np.ones((int(h * MORPH_KERNAL_RATIO),
+                      int(h * MORPH_KERNAL_RATIO)), np.uint8)
     img_closed = cv.morphologyEx(thresh, cv.MORPH_CLOSE, kernel)
 
     # get contours
@@ -284,16 +313,8 @@ def crop(img_location):
     worm_contour = _contour_sorting(contours, hierarchy, pixels, h, w)
 
     # crop image to selection - need to upscale values to original dims
-    br_dims = cv.boundingRect(worm_contour)
-    scld = [int(i / scale_ratio) for i in br_dims]
-    # add 2% buffer to prevent minor clipping of AOI
-    (h, w) = img_copy.shape[:2]
-    scld[0] = scld[0] - int(2 * w / 100)  # x value base
-    scld[1] = scld[1] - int(2 * h / 100)  # y value base
-    scld[2] = scld[2] + int(4 * w / 100)  # x width
-    scld[3] = scld[3] + int(4 * h / 100)  # y width
 
-    scld = [0 if x < 0 else x for x in scld]  # no negative buffer pixel values
+    scld = _scale_dims(worm_contour, img_copy, scale_ratio)
 
     crop_img = img_copy[scld[1]:scld[1]+scld[3], scld[0]:scld[0]+scld[2]]
 
@@ -319,6 +340,11 @@ if __name__ == "__main__":
         print('{} / {}'.format(i, len(imgs)))
         try:
             crop_img = crop(img)
+            cv.namedWindow('check', cv.WINDOW_NORMAL)
+            cv.imshow('check', crop_img)
+            cv.resizeWindow('check', 800, 800)
+            cv.waitKey(0)
+            cv.destroyAllWindows()
         except ImageCheckError as e:
             print(e)
         i += 1
