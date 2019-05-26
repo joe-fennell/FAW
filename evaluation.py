@@ -49,7 +49,7 @@ def compare(data):
     return None
 
 
-history = load_data('../bottleneck_history_rmsprop.json') #change this to your file
+history = load_data('saves/0008_finetuning_history_amsgrad_lr1e-06.json') #change this to your file
 compare(history)
 plot_metric(history['loss'], history['val_loss'], 'loss')
 plot_metric(history['acc'], history['val_acc'], 'accuracy')
