@@ -181,7 +181,7 @@ def _make_classifier():
     # Train the MLP that caps the ResNet model.
     mlp_model.fit(train_data, train_labels,
                   epochs=25,
-                  BATCH_SIZE=BATCH_SIZE,
+                  batch_size=BATCH_SIZE,
                   validation_data=(validation_data, validation_labels))
 
     # Build fully connected model.
