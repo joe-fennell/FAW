@@ -149,7 +149,7 @@ def _make_classifier():
     bottleneck_features_validation = model.predict_generator(
         valid_iter,
         (NB_VALIDATION_SAMPLES
-         // BATCH_SIZE)),
+         // BATCH_SIZE),
         verbose = 1)
     # NOTE: remove these if not needed
     np.savez_compressed(BASE_PATH + '/models/bottleneck_features_validation',
