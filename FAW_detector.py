@@ -103,7 +103,7 @@ def preprocess(im):
 def get_iterator(generator,
                  data_dir,
                  target_size=(IMG_W, IMG_H),
-                 BATCH_SIZE=BATCH_SIZE,
+                 batch_size=BATCH_SIZE,
                  class_mode=None,
                  shuffle=False):
 
@@ -113,7 +113,7 @@ def get_iterator(generator,
     https://keras.io/preprocessing/image/#flow_from_directory """
 
     iterator = generator.flow_from_directory(data_dir, target_size=target_size,
-                                             BATCH_SIZE=BATCH_SIZE,
+                                             batch_size=BATCH_SIZE,
                                              class_mode=class_mode,
                                              shuffle=shuffle)
 
