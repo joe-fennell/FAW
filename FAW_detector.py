@@ -139,8 +139,8 @@ def _make_classifier():
                                                         (NB_TRAIN_SAMPLES //
                                                          BATCH_SIZE))
     # NOTE: remove these if not needed
-    # np.save('/mnt/saves/bottleneck_features_train_amsgrad.npy',
-    #        bottleneck_features_train)
+     np.savez_compressed('/mnt/saves/bottleneck_features_train_amsgrad.npy',
+            bottleneck_features_train)
 
     # get a numpy array of predictions from the validation data
     bottleneck_features_validation = model.predict_generator(
@@ -148,8 +148,8 @@ def _make_classifier():
         (NB_VALIDATION_SAMPLES
          // BATCH_SIZE))
     # NOTE: remove these if not needed
-    # np.save('/mnt/saves/bottleneck_features_validation_amsgrad.npy',
-    #        bottleneck_features_validation)
+    np.savez_compressed('/mnt/saves/bottleneck_features_validation_amsgrad.npy',
+            bottleneck_features_validation)
 
     # get the number of classes and their labels in original order
     datagen_top = ImageDataGenerator()
@@ -192,4 +192,4 @@ def _make_classifier():
     base_path = str(pathlib.Path(__file__).parent)
     model.save_weights(base_path + "/saves/faw_classifier_weights.h5")
 
-
+_make_classifier()
