@@ -44,6 +44,8 @@ VALIDATION_DIR = '/mnt/data/validation'
 BATCH_SIZE = 1
 IMG_W, IMG_H = 224, 224
 
+BASE_PATH = str(pathlib.Path(__file__).parent)
+
 
 def get_num_samples(path):
     """Finds the number of .jpg samples in a given dir."""
@@ -59,7 +61,7 @@ NUM_TRAINABLE_LAYERS = 1
 CNN_LR = 0.000001  # learning rate for the network
 
 # load in k-means image segmentation made in jupyter notebook
-kmeans_3clusters = pickle.load(open('/mnt/kmeans_224.sav', 'rb'))
+kmeans_3clusters = pickle.load(open(BASE_PATH + '/saves/kmeans_224.sav', 'rb'))
 
 
 def predict(data, model, number_segments=2000):
@@ -139,7 +141,7 @@ def _make_classifier():
                                                         (NB_TRAIN_SAMPLES //
                                                          BATCH_SIZE))
     # NOTE: remove these if not needed
-    np.savez_compressed('/mnt/saves/bottleneck_features_train',
+    np.savez_compressed(BASE_PATH + '/saves/bottleneck_features_train',
                         bottleneck_features_train)
 
     # get a numpy array of predictions from the validation data
@@ -148,7 +150,7 @@ def _make_classifier():
         (NB_VALIDATION_SAMPLES
          // BATCH_SIZE))
     # NOTE: remove these if not needed
-    np.savez_compressed('/mnt/saves/bottleneck_features_validation',
+    np.savez_compressed(BASE_PATH + '/saves/bottleneck_features_validation',
                         bottleneck_features_validation)
 
     # get the number of classes and their labels in original order
