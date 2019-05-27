@@ -20,8 +20,8 @@ import keras
 import pandas as pd
 import pickle
 import numpy as np
-import json
 import glob
+import pathlib
 from keras.backend.tensorflow_backend import set_session
 from keras.preprocessing.image import ImageDataGenerator
 from keras import models
@@ -44,6 +44,14 @@ VALIDATION_DIR = '/mnt/data/validation'
 BATCH_SIZE = 1
 IMG_W, IMG_H = 224, 224
 
+
+def get_num_samples(path):
+    """Finds the number of .jpg samples in a given dir."""
+    find_str = path + '/**/*.jpg'
+    num_jpgs = len(glob.glob(find_str, recursive=True))
+    return num_jpgs
+
+
 NB_TRAIN_SAMPLES = get_num_samples(TRAIN_DIR)
 NB_VALIDATION_SAMPLES = get_num_samples(VALIDATION_DIR)
 
@@ -53,15 +61,6 @@ CNN_LR = 0.000001  # learning rate for the network
 # load in k-means image segmentation made in jupyter notebook
 kmeans_3clusters = pickle.load(open('/mnt/kmeans_224.sav', 'rb'))
 
-
-def get_num_samples(path):
-
-    """Finds the number of .jpg samples in a given dir."""
-
-    find_str = path + '/**/*.jpg'
-    num_jpgs = len(glob.glob(find_str, recursive=True))
-
-    return num_jpgs
 
 def predict(data, model, number_segments=2000):
     """ returns label image"""
@@ -97,6 +96,7 @@ def preprocess(im):
     im2[:, :, 1][im_labels == 0] = 0
     im2[:, :, 2][im_labels == 0] = 0
     return array_to_img(im / 255)
+
 
 def get_iterator(generator,
                  data_dir,
@@ -139,8 +139,8 @@ def _make_classifier():
                                                         (NB_TRAIN_SAMPLES //
                                                          BATCH_SIZE))
     # NOTE: remove these if not needed
-    np.savez_compressed('/mnt/saves/bottleneck_features_train_amsgrad.npy',
-            bottleneck_features_train)
+    np.savez_compressed('/mnt/saves/bottleneck_features_train',
+                        bottleneck_features_train)
 
     # get a numpy array of predictions from the validation data
     bottleneck_features_validation = model.predict_generator(
@@ -148,8 +148,8 @@ def _make_classifier():
         (NB_VALIDATION_SAMPLES
          // BATCH_SIZE))
     # NOTE: remove these if not needed
-    np.savez_compressed('/mnt/saves/bottleneck_features_validation_amsgrad.npy',
-            bottleneck_features_validation)
+    np.savez_compressed('/mnt/saves/bottleneck_features_validation',
+                        bottleneck_features_validation)
 
     # get the number of classes and their labels in original order
     datagen_top = ImageDataGenerator()
@@ -158,7 +158,6 @@ def _make_classifier():
     valid_iter_top = get_iterator(datagen_top, VALIDATION_DIR)
     train_labels = train_iter_top.classes
     validation_labels = valid_iter_top.classes
-    num_classes = len(train_iter_top.class_indices)
 
     # load the bottleneck features saved earlier
     train_data = bottleneck_features_train
@@ -172,8 +171,8 @@ def _make_classifier():
 
     adam = keras.optimizers.Adam(lr=0.0001, amsgrad=True)
     mlp_model.compile(optimizer=adam,
-                  loss='binary_crossentropy',
-                  metrics=['accuracy'])
+                      loss='binary_crossentropy',
+                      metrics=['accuracy'])
 
     # Train the MLP that caps the ResNet model.
     mlp_model.fit(train_data, train_labels,
@@ -185,11 +184,11 @@ def _make_classifier():
     base_model = ResNet18(input_shape=(IMG_W, IMG_H, 3),
                           weights='imagenet', include_top=False)
 
-
     model = models.Model(inputs=base_model.input,
                          outputs=mlp_model(base_model.output))
     # Save weights
     base_path = str(pathlib.Path(__file__).parent)
     model.save_weights(base_path + "/saves/faw_classifier_weights.h5")
+
 
 _make_classifier()
