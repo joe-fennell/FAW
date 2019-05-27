@@ -139,7 +139,7 @@ def _make_classifier():
                                                         (NB_TRAIN_SAMPLES //
                                                          BATCH_SIZE))
     # NOTE: remove these if not needed
-     np.savez_compressed('/mnt/saves/bottleneck_features_train_amsgrad.npy',
+    np.savez_compressed('/mnt/saves/bottleneck_features_train_amsgrad.npy',
             bottleneck_features_train)
 
     # get a numpy array of predictions from the validation data
