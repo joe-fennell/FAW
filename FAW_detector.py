@@ -139,7 +139,8 @@ def _make_classifier():
     # get a numpy array of predictions from the train data
     bottleneck_features_train = model.predict_generator(train_iter,
                                                         (NB_TRAIN_SAMPLES //
-                                                         BATCH_SIZE))
+                                                         BATCH_SIZE),
+                                                        verbose = 1)
     # NOTE: remove these if not needed
     np.savez_compressed(BASE_PATH + '/models/bottleneck_features_train',
                         bottleneck_features_train)
@@ -149,6 +150,7 @@ def _make_classifier():
         valid_iter,
         (NB_VALIDATION_SAMPLES
          // BATCH_SIZE))
+        verbose = 1)
     # NOTE: remove these if not needed
     np.savez_compressed(BASE_PATH + '/models/bottleneck_features_validation',
                         bottleneck_features_validation)
