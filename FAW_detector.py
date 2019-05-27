@@ -61,7 +61,7 @@ NUM_TRAINABLE_LAYERS = 1
 CNN_LR = 0.000001  # learning rate for the network
 
 # load in k-means image segmentation made in jupyter notebook
-kmeans_3clusters = pickle.load(open(BASE_PATH + '/saves/kmeans_224.sav', 'rb'))
+kmeans_3clusters = pickle.load(open(BASE_PATH + '/models/kmeans_224.sav', 'rb'))
 
 
 def predict(data, model, number_segments=2000):
@@ -141,7 +141,7 @@ def _make_classifier():
                                                         (NB_TRAIN_SAMPLES //
                                                          BATCH_SIZE))
     # NOTE: remove these if not needed
-    np.savez_compressed(BASE_PATH + '/saves/bottleneck_features_train',
+    np.savez_compressed(BASE_PATH + '/models/bottleneck_features_train',
                         bottleneck_features_train)
 
     # get a numpy array of predictions from the validation data
@@ -150,7 +150,7 @@ def _make_classifier():
         (NB_VALIDATION_SAMPLES
          // BATCH_SIZE))
     # NOTE: remove these if not needed
-    np.savez_compressed(BASE_PATH + '/saves/bottleneck_features_validation',
+    np.savez_compressed(BASE_PATH + '/models/bottleneck_features_validation',
                         bottleneck_features_validation)
 
     # get the number of classes and their labels in original order
@@ -189,8 +189,7 @@ def _make_classifier():
     model = models.Model(inputs=base_model.input,
                          outputs=mlp_model(base_model.output))
     # Save weights
-    base_path = str(pathlib.Path(__file__).parent)
-    model.save_weights(base_path + "/saves/faw_classifier_weights.h5")
+    model.save_weights(BASE_PATH + "/models/faw_classifier_weights.h5")
 
 
 _make_classifier()
