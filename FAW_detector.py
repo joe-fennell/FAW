@@ -46,6 +46,7 @@ MLP_WEIGHTS = BASE_PATH + '/models/MLP_weights.h5'
 TRAIN_DIR = '/mnt/data/train'
 VALIDATION_DIR = '/mnt/data/validation'
 RESNET_DIR = BASE_PATH + 'models/FC_Resnet.h5'
+KMEANS_3 = pickle.load(open(BASE_PATH + '/models/kmeans_224.sav', 'rb'))
 BATCH_SIZE = 1
 IMG_W, IMG_H = 224, 224
 
@@ -77,11 +78,9 @@ def _calculate_segment_stats(data, segments):
 
 
 def _preprocess(im):
-    # predict labels for data via K means
-    kmeans_3clusters = pickle.load(open(
-        BASE_PATH + '/models/kmeans_224.sav', 'rb'))
+    # predict labels for data via K means with 3 clusters
     im2 = np.array(im)
-    im_labels = _predict(np.float64(im2 / 255), kmeans_3clusters)
+    im_labels = _predict(np.float64(im2 / 255), KMEANS_3)
     # imgarr = img_to_array(im, data_format=None)
     im2[:, :, 0][im_labels == 0] = 0
     im2[:, :, 1][im_labels == 0] = 0
