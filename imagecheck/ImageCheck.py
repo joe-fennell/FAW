@@ -229,7 +229,7 @@ def _contour_sorting(contours, hierarchy, pixels, h, w):
     raise ImageCheckError("More than one potential worm contour found.")
 
 
-def crop(img_location):
+def check_and_crop(img_location):
     """Finds parent contours in an image, gets shape factors for those contours
     then crops the image to the area of interest containing the worm.
 
