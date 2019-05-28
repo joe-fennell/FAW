@@ -173,7 +173,7 @@ def _make_classifier():
     # Otherwise, train it from saved features data
     def get_num_samples(path, ext):
         """Finds the number of .jpg samples in a given dir."""
-        find_str = path + '/**/*.{}'.format(ext)
+        find_str = path + '/**/*{}'.format(ext)
         num_jpgs = len(glob.glob(find_str, recursive=True))
         return num_jpgs
 
@@ -199,11 +199,10 @@ def _make_classifier():
                                                BATCH_SIZE),
                                               verbose=1)
     # get a numpy array of predictions from the validation data
-    validation_data = base_model.predict_generator(
-        valid_iter,
-        (NB_VALIDATION_SAMPLES
-         // BATCH_SIZE),
-        verbose=1)
+    validation_data = base_model.predict_generator(valid_iter,
+                                                   (NB_VALIDATION_SAMPLES
+                                                    // BATCH_SIZE),
+                                                   verbose=1)
     # MLP cap
     mlp_model = Sequential()
     mlp_model.add(Flatten(input_shape=train_data.shape[1:]))
