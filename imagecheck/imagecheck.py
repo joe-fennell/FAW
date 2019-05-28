@@ -19,7 +19,7 @@ threshold.
 # contours outside the box (would require uniform background).
 
 # TODO: run a timeit on a single image check
-# NOTE: estimate is around 0.8 seconds a picture so no real time. 
+# NOTE: estimate is around 0.8 seconds a picture so no real time.
 
 # TODO: look at raising custom errors for different contour rejection issues
 # which will be useful for user interface down the line
@@ -147,6 +147,7 @@ def _plot_contours(img, contours, h, w, scale_ratio):
     cv.waitKey(0)
     cv.destroyAllWindows()
 
+
 def _scale_dims(contour, img, scale_ratio):
 
     # scale up dimensions according to scale ratio
@@ -203,9 +204,10 @@ def _contour_sorting(contours, hierarchy, pixels, h, w):
 
     # get relative path for model loads to resolve issues with file locations
     base_path = str(pathlib.Path(__file__).parent)
-    contour_mlp = pickle.load(open(base_path + '../models/mlp_ForContoursPCA6.sav',
-                                   'rb'))
-    contour_pca = pickle.load(open(base_path + '../models/ContoursPCA6.sav', 'rb'))
+    contour_mlp = pickle.load(
+        open(base_path + '../models/mlp_ForContoursPCA6.sav', 'rb'))
+    contour_pca = pickle.load(
+        open(base_path + '../models/ContoursPCA6.sav', 'rb'))
 
     worm_contours = []
 
@@ -268,7 +270,8 @@ def crop(img_location):
     pixels = h * w
     scale_ratio = 1
     if pixels > SCALED_IMAGE_PIXELS:  # 224 x 224 or similar dims size
-        scale_ratio = math.sqrt(SCALED_IMAGE_PIXELS / pixels)  # sqrt for dims scale ratio
+        # sqrt for dims scale ratio
+        scale_ratio = math.sqrt(SCALED_IMAGE_PIXELS / pixels)
         img, h, w = _downscale_image(img, scale_ratio)
         pixels = h * w
 
