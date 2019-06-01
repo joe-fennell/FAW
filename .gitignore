@@ -1,6 +1,5 @@
 /data/
 faw_container.simg
-*.h5
 *.npy
 /worms/
 Singularity*
