@@ -66,7 +66,7 @@ class FAW_classifier:
 
         # If we already have the models weights
         with json_file.open() as f:
-            loaded_model_json = f.read()
+            loaded_model_json = f.read().decode(errors='ignore')
         loaded_mlp = model_from_json(loaded_model_json)
         loaded_mlp.load_weights(str(weights))
 

@@ -180,7 +180,7 @@ def make_classifier():
     # Save MLP model to file
     mlp_json = mlp_model.to_json()
     with open(PROJ_DIR + '/models/MLP_CNN_model.json', 'w') as f:
-        f.write(mlp_json)
+        json.dump(mlp_json, f)
     mlp_model.save_weights(PROJ_DIR + '/models/MLP_CNN_weights.h5')
 
     # combine ResNet18 base and trained mlp
