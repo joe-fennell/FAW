@@ -3,4 +3,5 @@ faw_container.simg
 *.npy
 /worms/
 Singularity*
+*.pyc
 
