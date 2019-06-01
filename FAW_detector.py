@@ -62,6 +62,7 @@ class FAW_classifier:
 
         if not weights.is_file() or not json_file.is_file():
             # if we don't have the required files, regenerate the classifier.
+            print("CLASSIFIER: no classifier save detected. Generating ... ")
             return BC.make_classifier()
 
         # If we already have the models weights
@@ -77,7 +78,7 @@ class FAW_classifier:
         # Tack the loaded MLP on the the ResNet18 base and return
         model = models.Model(inputs=base_model.input,
                              outputs=loaded_mlp(base_model.output))
-        return model
+        return mode
 
     def process_image(self, image_path):
         """Processes an image using imagecheck.check_and_crop function.

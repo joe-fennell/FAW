@@ -30,7 +30,7 @@ set_session(tf.Session(config=config))
 
 # GLOBALS
 PROJ_DIR = str(pathlib.Path(__file__).parents[1])
-TRAIN_DIR = PROJ_DIR + '/mnt/data/train'
+TRAIN_DIR = PROJ_DIR + '/data/train'
 VALIDATION_DIR = PROJ_DIR + '/data/validation'
 KMEANS_3 = pickle.load(open(PROJ_DIR + '/models/kmeans_224.sav', 'rb'))
 BATCH_SIZE = 1
