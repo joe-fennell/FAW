@@ -15,6 +15,7 @@ Will generate and train the RESNET18 based classifier if it is not present.
 # TODO: implement argparse for test number and recalculating of weights
 
 import pathlib
+import json
 import imagecheck.ImageCheck as ImageCheck
 import models.BuildClassifier as BC
 from keras import models
@@ -57,8 +58,6 @@ class FAW_classifier:
         # for training ResNet model if not present in dir.
         weights = pathlib.Path(mlp_weights_path)
         json_file = pathlib.Path(mlp_json_path)
-        print(mlp_json_path)
-        print(mlp_weights_path)
 
         if not weights.is_file() or not json_file.is_file():
             # if we don't have the required files, regenerate the classifier.
@@ -66,9 +65,8 @@ class FAW_classifier:
             return BC.make_classifier()
 
         # If we already have the models weights
-        with json_file.open() as f:
-            loaded_model_json = f.read().decode(errors='ignore')
-        loaded_mlp = model_from_json(loaded_model_json)
+        with json_file.open('r', encoding='utf-8') as f:
+            loaded_model_json = f.read()
         loaded_mlp.load_weights(str(weights))
 
         # ResNet18 base
