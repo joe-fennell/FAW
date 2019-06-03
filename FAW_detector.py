@@ -78,6 +78,24 @@ class FAW_classifier:
 
         return self._classifier.predict(image)
 
+def detect_fallarmyworm(image_path, threshold=0.5):
+    """Predicts whether an iamge contains a Fall Armyworm or not.
+
+    Args:
+        image_path (str): path to the image
+        threshold (double): Threhold above which the ResNet positive
+        probability is classed as a positive classifiation. Default = 0.5
+    Returns:
+        bool : True is contains Fall Armyworm, False otherwise.
+    """
+    classifier = FAW_classifier()
+    
+    if classifier.preidct(image_path) > threshold:
+        return True
+
+    return False
+
+
 # Argparse options for running from command line
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
