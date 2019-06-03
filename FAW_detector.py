@@ -8,45 +8,36 @@ Script to identify Fall Armyworm from a given image..
 
 Outputs true or false for Fall Armyworm detected.
 
-Will generate and train the RESNET18 based classifier if it is not present.
+Will generate and train the ResNet18 based classifier if it is not present.
 """
 
 # TODO: investigate whether we can avoid hard coded image dimensions
-# TODO: implement argparse for test number and recalculating of weights
 
 import pathlib
-import json
+import argparse
 import imagecheck.ImageCheck as ImageCheck
 import models.BuildClassifier as BC
-from keras import models
-from keras.models import model_from_json
-from classification_models.resnet import ResNet18
+import numpy as np
 
 
 # GLOBALS
 BASE_PATH = str(pathlib.Path(__file__).parent)
-MLP_JSON = BASE_PATH + '/models/MLP_CNN_model.json'
 MLP_WEIGHTS = BASE_PATH + '/models/MLP_CNN_weights.h5'
-IMG_W, IMG_H = 224, 224
+IMG_DIMS = (224, 224)
 
 
 class FAW_classifier:
     """Classifer that loads CNN and crops and classifies fed images."""
 
-    def __init__(self,
-                 classifier_json=MLP_JSON,
-                 classifier_weights=MLP_WEIGHTS):
+    def __init__(self, classifier_weights=MLP_WEIGHTS):
         """
         Args:
-            classifier_json (str): path to the .json file containing the MLP
-            structure.
             classifier_weights (str): path to the .h5 MLP weights file.
         """
 
-        self._classifier = self.load_classifier(classifier_weights,
-                                                classifier_json)
+        self._classifier = self.load_classifier(classifier_weights)
 
-    def load_classifier(self, mlp_weights_path, mlp_json_path):
+    def load_classifier(self, mlp_weights_path):
         """ Loads classifier via saved weights.
 
         Args:
@@ -54,31 +45,9 @@ class FAW_classifier:
         Returns:
             The loaded fully connected and trained ResNet18 model.
         """
-        # TODO: finish
-        # for training ResNet model if not present in dir.
-        weights = pathlib.Path(mlp_weights_path)
-        json_file = pathlib.Path(mlp_json_path)
+        return BC.make_classifier(mlp_weights_path)
 
-        if not weights.is_file() or not json_file.is_file():
-            # if we don't have the required files, regenerate the classifier.
-            print("CLASSIFIER: no classifier save detected. Generating ... ")
-            return BC.make_classifier()
-
-        # If we already have the models weights
-        with json_file.open('r', encoding='utf-8') as f:
-            loaded_model_json = f.read()
-        loaded_mlp.load_weights(str(weights))
-
-        # ResNet18 base
-        base_model = ResNet18(input_shape=(IMG_W, IMG_H, 3),
-                              weights='imagenet',
-                              include_top=False)
-        # Tack the loaded MLP on the the ResNet18 base and return
-        model = models.Model(inputs=base_model.input,
-                             outputs=loaded_mlp(base_model.output))
-        return mode
-
-    def process_image(self, image_path):
+    def process_image(self, image_path, dims=False):
         """Processes an image using imagecheck.check_and_crop function.
 
         Args:
@@ -90,7 +59,7 @@ class FAW_classifier:
             if the image does not meet the required standards or no
             worm is found.
         """
-        return ImageCheck.check_and_crop(image_path)
+        return ImageCheck.check_and_crop(image_path, dims)
 
     def predict(self, image_path):
         """Predict whether an image contains a Fall Armyworm.
@@ -102,21 +71,21 @@ class FAW_classifier:
         Returns:
             True if Fall Armyworm detected, else False.
         """
-        image = self.process_image(image_path)
+        image = self.process_image(image_path, IMG_DIMS)
+        # reshape image to expected TF format (None, channels, height, width)
+        image = np.asarray(image)
+        image = np.expand_dims(image, axis=0)
 
         return self._classifier.predict(image)
 
+# Argparse options for running from command line
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("path_to_img", type=str,
+                        help=("path to the image to be analysed by the "
+                              "Fall Armyworm detector"))
+    args = parser.parse_args()
+    classifier = FAW_classifier()
+    prediction = classifier.predict(args.path_to_img)
+    print("\n\nFall Armyworm detectet probability: " + str(prediction))
 
-classifier = FAW_classifier(MLP_WEIGHTS, MLP_JSON)
-
-data_dirs = ['train/', 'validation/']
-categories = ['faw/', 'notfaw/']
-
-for data_dir in data_dirs:
-    for category in categories:
-        loc_str = '/mnt/data/' + data_dir + category
-        path = pathlib.Path(loc_str)
-        imgs = list(path.glob('*.jpg'))
-        for img in imgs:
-            print(img)
-            print(classifier.predict(str(img)))

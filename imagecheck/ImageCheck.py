@@ -18,23 +18,9 @@ threshold.
 # picture with the caterpillar inside the specific box. Reject image if any
 # contours outside the box (would require uniform background).
 
-# TODO: run a timeit on a single image check
-# NOTE: estimate is around 0.8 seconds a picture so no real time.
-
-# TODO: look at raising custom errors for different contour rejection issues
-# which will be useful for user interface down the line
-
-# TODO: Iowa State Entymology images of fallarmy worm
-# NOTE: could only find one image, no image database as far as I can see.
-
 # TODO: look at report structure etc for something to give out on the project
 # on method, differenty design options considered etc.
 
-# TODO: look into basic phone app development on emulator
-# NOTE: now doing coursera online course from 0 to app development. working
-# protoype is feasable if I can work more (20+) hours or so a week on it.
-
-import glob
 import pickle
 import math
 import pathlib
@@ -65,9 +51,12 @@ def _get_colour_codes(arr):
     return codes[0], codes[1]
 
 
-def _downscale_image(img, scale):
+def _downscale_image(img, scale=1, dims=False):
 
     # downscales the image to make k means less resource intensive
+
+    if dims:
+        return cv.resize(img, dsize=dims, interpolation=cv.INTER_AREA)
 
     width = int(img.shape[1] * scale)
     height = int(img.shape[0] * scale)
@@ -229,7 +218,7 @@ def _contour_sorting(contours, hierarchy, pixels, h, w):
     raise ImageCheckError("More than one potential worm contour found.")
 
 
-def check_and_crop(img_location):
+def check_and_crop(img_location, dims=False):
     """Finds parent contours in an image, gets shape factors for those contours
     then crops the image to the area of interest containing the worm.
 
@@ -243,21 +232,18 @@ def check_and_crop(img_location):
     Checks the image to see if it conforms to:
         - A preset blur threshold
 
-    Parameters
-    ----------
-    img_location : str
-        String containing the location of the image file.
+    Args:
+        img_location (str): String containing the location of the image file.
+        dims (tuple): Required height and width for the image in format
+        (height, width)
 
-    Returns
-    -------
-    numpy.array
-        Contains the cropped image as a an array of shape (h, w, 3).
+    Returns:
+        numpy.array: Contains the cropped image as a an array of shape
+        (h, w, 3).
 
-    Raises
-    ------
-    ImageCheckError
-        Any image rejections (border contours, blur, no worm etc.) raise this
-        error with relevant error message.
+    Raises:
+        ImageCheckError : Any image rejections (border contours, blur,
+        no worm etc.) raise this error with relevant error message.
 
 
     """
@@ -325,6 +311,9 @@ def check_and_crop(img_location):
     if not _blur_check(crop_img):
         raise ImageCheckError("Image too blurry.")
 
+    if dims:
+        crop_img = _downscale_image(crop_img, dims=dims)
+
     return crop_img
 
 
@@ -332,22 +321,3 @@ class ImageCheckError(Exception):
     """Used for custom error messages to do with image checking and
     segmentation."""
     pass
-
-
-if __name__ == "__main__":
-    imgs = list(glob.glob('../worms/**/*.jpg'))
-
-    i = 1
-    for img in imgs:
-        print(img)
-        print('{} / {}'.format(i, len(imgs)))
-        try:
-            crop_img = crop(img)
-            cv.namedWindow('check', cv.WINDOW_NORMAL)
-            cv.imshow('check', crop_img)
-            cv.resizeWindow('check', 800, 800)
-            cv.waitKey(0)
-            cv.destroyAllWindows()
-        except ImageCheckError as e:
-            print(e)
-        i += 1

@@ -15,6 +15,7 @@ import numpy as np
 import glob
 import pathlib
 import json
+import warnings
 from keras.backend.tensorflow_backend import set_session
 from keras.preprocessing.image import ImageDataGenerator
 from keras import models
@@ -28,6 +29,9 @@ from skimage.segmentation import slic
 config = tf.ConfigProto()
 config.gpu_options.per_process_gpu_memory_fraction = 0.8
 set_session(tf.Session(config=config))
+tf.logging.set_verbosity(tf.logging.ERROR)
+warnings.filterwarnings("ignore", category=UserWarning)
+
 
 # GLOBALS
 PROJ_DIR = str(pathlib.Path(__file__).parents[1])
@@ -36,6 +40,7 @@ VALIDATION_DIR = PROJ_DIR + '/data/validation'
 KMEANS_3 = pickle.load(open(PROJ_DIR + '/models/kmeans_224.sav', 'rb'))
 BATCH_SIZE = 1
 IMG_W, IMG_H = 224, 224
+MLP_INPUT = (7, 7, 512)
 
 
 def _predict(data, model, number_segments=2000):
@@ -99,17 +104,53 @@ def get_iterator(generator,
         https://keras.io/preprocessing/image/#flow_from_directory """
 
     iterator = generator.flow_from_directory(data_dir, target_size=target_size,
-                                             batch_size=BATCH_SIZE,
+                                             batch_size=batch_size,
                                              class_mode=class_mode,
                                              shuffle=shuffle)
 
     return iterator
 
 
-def make_classifier():
+def make_classifier(weights_path=None):
 
-    """Make classifier if saved weights not present."""
+    """Make classifier. Train it if weights not present.
+    
+    Args:
+        weights_path (str): Path to the weights file.
+    
+    Returns:
+        Keras model with ResNet18 base and MLP cap."""
 
+    # ResNet18 base
+    base_model = ResNet18(input_shape=(IMG_W, IMG_H, 3),
+                          weights='imagenet',
+                          include_top=False)
+    # MLP cap
+    mlp_model = Sequential()
+    mlp_model.add(Flatten(input_shape=MLP_INPUT))
+    mlp_model.add(Dense(1024, activation='relu'))
+    mlp_model.add(Dropout(rate=0.5))
+    mlp_model.add(Dense(1, activation='sigmoid'))
+
+    adam = keras.optimizers.Adam(lr=0.0001, amsgrad=True)
+    mlp_model.compile(optimizer=adam,
+                      loss='binary_crossentropy',
+                      metrics=['accuracy'])
+
+    if weights_path is not None:  # Check if weights file is valid.
+        weights_path = pathlib.Path(weights_path)
+        if weights_path.is_file() and weights_path.suffix == '.h5':
+            mlp_model.load_weights(str(weights_path))
+            model = models.Model(inputs=base_model.input,
+                                 outputs=mlp_model(base_model.output))
+            return model
+        # Otherwise, invalid weights file. Print to console and train.
+        print("ERROR: Weights file provided is invalid. Press any key to "
+              "retrain model.")
+        input()
+        
+
+            
     # Otherwise, train it from saved features data
     def get_num_samples(path, ext):
         """Finds the number of .jpg samples in a given dir."""
@@ -131,10 +172,6 @@ def make_classifier():
     train_iter = get_iterator(datagen, TRAIN_DIR)
     valid_iter = get_iterator(datagen, VALIDATION_DIR)
 
-    # ResNet18 base
-    base_model = ResNet18(input_shape=(IMG_W, IMG_H, 3),
-                          weights='imagenet',
-                          include_top=False)
 
     # get a numpy array of predictions from the train data
     train_data = base_model.predict_generator(train_iter,
@@ -146,25 +183,7 @@ def make_classifier():
                                                    (NB_VALIDATION_SAMPLES
                                                     // BATCH_SIZE),
                                                    verbose=1)
-    # MLP cap
-    mlp_model = Sequential()
-    mlp_model.add(Flatten(input_shape=train_data.shape[1:]))
-    mlp_model.add(Dense(1024, activation='relu'))
-    mlp_model.add(Dropout(0.5))
-    mlp_model.add(Dense(1, activation='sigmoid'))
 
-    adam = keras.optimizers.Adam(lr=0.0001, amsgrad=True)
-    mlp_model.compile(optimizer=adam,
-                      loss='binary_crossentropy',
-                      metrics=['accuracy'])
-
-    # save training features
-    # np.savez_compressed(BASE_PATH + '/models/bottleneck_features_train',
-    #                     bottleneck_features_train)
-    # np.savez_compressed(BASE_PATH + '/models/bottleneck_features_validation',
-    #                     bottleneck_features_validation)
-
-    # get the number of classes and their labels in original order
     datagen_top = ImageDataGenerator()
     train_iter_top = get_iterator(datagen_top, TRAIN_DIR,
                                   class_mode='categorical')
