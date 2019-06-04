@@ -4,4 +4,4 @@ faw_container.simg
 /worms/
 Singularity*
 *.pyc
-
+*.swp
