@@ -78,6 +78,7 @@ class FAW_classifier:
 
         return self._classifier.predict(image)
 
+
 def detect_fallarmyworm(image_path, threshold=0.5):
     """Predicts whether an iamge contains a Fall Armyworm or not.
 
@@ -89,7 +90,7 @@ def detect_fallarmyworm(image_path, threshold=0.5):
         bool : True is contains Fall Armyworm, False otherwise.
     """
     classifier = FAW_classifier()
-    
+
     if classifier.preidct(image_path) > threshold:
         return True
 
@@ -104,9 +105,8 @@ if __name__ == "__main__":
                               "Fall Armyworm detector"))
     args = parser.parse_args()
     classifier = FAW_classifier()
-    if pathlib.Path(args.path_to_img).is_file():
+    if pathlib.Path(args.path_to_img).is_file() and args.path_to_img != 'NULL':
         prediction = classifier.predict(args.path_to_img)
-        print("\n\nFall Armyworm detectet probability: " + str(prediction))
+        print("\nFall Armyworm detectet probability: " + str(prediction))
     else:
-        print("\n\nFAW_Detector ERROR: Path to image file is not a valid file.")
-
+        print("\nFAW_Detector ERROR: Path to image file is not a valid file.")
