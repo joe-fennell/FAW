@@ -104,6 +104,9 @@ if __name__ == "__main__":
                               "Fall Armyworm detector"))
     args = parser.parse_args()
     classifier = FAW_classifier()
-    prediction = classifier.predict(args.path_to_img)
-    print("\n\nFall Armyworm detectet probability: " + str(prediction))
+    if pathlib.Path(args.path_to_img).is_file():
+        prediction = classifier.predict(args.path_to_img)
+        print("\n\nFall Armyworm detectet probability: " + str(prediction))
+    else:
+        print("\n\nFAW_Detector ERROR: Path to image file is not a valid file.")
 
