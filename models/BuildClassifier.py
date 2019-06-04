@@ -31,7 +31,7 @@ config.gpu_options.per_process_gpu_memory_fraction = 0.8
 set_session(tf.Session(config=config))
 tf.logging.set_verbosity(tf.logging.ERROR)
 warnings.filterwarnings("ignore", category=UserWarning)
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = 3  # silence TF stdout output
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # silence tensorflow messages
 
 
 # GLOBALS

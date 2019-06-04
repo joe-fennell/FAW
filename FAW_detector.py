@@ -12,6 +12,7 @@ Will generate and train the ResNet18 based classifier if it is not present.
 """
 
 # TODO: investigate whether we can avoid hard coded image dimensions
+# TODO: add argparse classification threshold option
 
 import pathlib
 import argparse
@@ -105,8 +106,8 @@ if __name__ == "__main__":
                               "Fall Armyworm detector"))
     args = parser.parse_args()
     classifier = FAW_classifier()
-    if pathlib.Path(args.path_to_img).is_file() and args.path_to_img != 'NULL':
+    if pathlib.Path(args.path_to_img).is_file() and args.path_to_img != '':
         prediction = classifier.predict(args.path_to_img)
-        print("\nFall Armyworm detectet probability: " + str(prediction))
+        print("\nFall Armyworm detected probability: " + str(prediction))
     else:
         print("\nFAW_Detector ERROR: Path to image file is not a valid file.")
