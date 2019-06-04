@@ -7,15 +7,15 @@ BuildClassifier.py
 Script to train and build the Fall Armyworm Classifier.
 """
 
+import pickle
+import glob
+import pathlib
+import warnings
+import os
 import tensorflow as tf
 import keras
 import pandas as pd
-import pickle
 import numpy as np
-import glob
-import pathlib
-import json
-import warnings
 from keras.backend.tensorflow_backend import set_session
 from keras.preprocessing.image import ImageDataGenerator
 from keras import models
@@ -31,6 +31,7 @@ config.gpu_options.per_process_gpu_memory_fraction = 0.8
 set_session(tf.Session(config=config))
 tf.logging.set_verbosity(tf.logging.ERROR)
 warnings.filterwarnings("ignore", category=UserWarning)
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = 3  # silence TF stdout output
 
 
 # GLOBALS
@@ -114,10 +115,10 @@ def get_iterator(generator,
 def make_classifier(weights_path=None):
 
     """Make classifier. Train it if weights not present.
-    
+
     Args:
         weights_path (str): Path to the weights file.
-    
+
     Returns:
         Keras model with ResNet18 base and MLP cap."""
 
@@ -148,9 +149,7 @@ def make_classifier(weights_path=None):
         print("ERROR: Weights file provided is invalid. Press any key to "
               "retrain model.")
         input()
-        
 
-            
     # Otherwise, train it from saved features data
     def get_num_samples(path, ext):
         """Finds the number of .jpg samples in a given dir."""
@@ -171,7 +170,6 @@ def make_classifier(weights_path=None):
 
     train_iter = get_iterator(datagen, TRAIN_DIR)
     valid_iter = get_iterator(datagen, VALIDATION_DIR)
-
 
     # get a numpy array of predictions from the train data
     train_data = base_model.predict_generator(train_iter,
@@ -198,9 +196,6 @@ def make_classifier(weights_path=None):
                   validation_data=(validation_data, validation_labels))
 
     # Save MLP model to file
-    mlp_json = mlp_model.to_json()
-    with open(PROJ_DIR + '/models/MLP_CNN_model.json', 'w', encoding='utf-8') as f:
-        json.dump(mlp_json, f)
     mlp_model.save_weights(PROJ_DIR + '/models/MLP_CNN_weights.h5')
 
     # combine ResNet18 base and trained mlp
