@@ -7,6 +7,8 @@ BuildClassifier.py
 Script to train and build the Fall Armyworm Classifier.
 """
 
+# TODO: add code to supress Keras "Using backend ___" console output
+
 import pickle
 import glob
 import pathlib
@@ -26,12 +28,12 @@ from classification_models.resnet import ResNet18
 from skimage.segmentation import slic
 
 # Set TensorFlow config
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # silence tensorflow messages
 config = tf.ConfigProto()
 config.gpu_options.per_process_gpu_memory_fraction = 0.8
 set_session(tf.Session(config=config))
 tf.logging.set_verbosity(tf.logging.ERROR)
 warnings.filterwarnings("ignore", category=UserWarning)
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # silence tensorflow messages
 
 
 # GLOBALS
