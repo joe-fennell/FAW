@@ -110,4 +110,5 @@ if __name__ == "__main__":
         prediction = classifier.predict(args.path_to_img)
         print("\nFall Armyworm detected probability: " + str(prediction))
     else:
-        print("\nFAW_Detector ERROR: Path to image file is not a valid file.")
+        print("\nFAW_Detector ERROR: {} is not a valid file.".append(
+        args.path_to_img))
