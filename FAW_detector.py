@@ -62,17 +62,21 @@ class FAW_classifier:
         """
         return ImageCheck.check_and_crop(image_path, dims)
 
-    def predict(self, image_path):
+    def predict(self, image_path, preprocessed=False):
         """Predict whether an image contains a Fall Armyworm.
 
         Args:
             image_path (str): Path to the image containing object to be
-            classified.
+                classified.
+            preprocessed (bool): If True, no processing will be applied to the
+                image as supplied image is expected to have already been
+                processed to meet the format requirements..
 
         Returns:
             True if Fall Armyworm detected, else False.
         """
-        image = self.process_image(image_path, IMG_DIMS)
+        if not preprocessed:
+            image = self.process_image(image_path, IMG_DIMS)
         # reshape image to expected TF format (None, channels, height, width)
         image = np.asarray(image)
         image = np.expand_dims(image, axis=0)
@@ -92,7 +96,7 @@ def detect_fallarmyworm(image_path, threshold=0.5):
     """
     classifier = FAW_classifier()
 
-    if classifier.preidct(image_path) > threshold:
+    if classifier.predict(image_path) > threshold:
         return True
 
     return False
@@ -111,4 +115,4 @@ if __name__ == "__main__":
         print("\nFall Armyworm detected probability: " + str(prediction))
     else:
         print("\nFAW_Detector ERROR: {} is not a valid file.".format(
-        args.path_to_img))
+            args.path_to_img))
