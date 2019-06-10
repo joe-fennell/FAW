@@ -16,9 +16,10 @@ Will generate and train the ResNet18 based classifier if it is not present.
 
 import pathlib
 import argparse
+import cv2
+import numpy as np
 import imagecheck.ImageCheck as ImageCheck
 import models.BuildClassifier as BC
-import numpy as np
 
 
 # GLOBALS
@@ -38,6 +39,12 @@ class FAW_classifier:
 
         self._classifier = self.load_classifier(classifier_weights)
 
+    def _load_image(self, image):
+        """Loads an image from array or string."""
+        if type(image) is str:
+            image = cv2.imread(image)
+        return image
+
     def load_classifier(self, mlp_weights_path):
         """ Loads classifier via saved weights.
 
@@ -48,11 +55,11 @@ class FAW_classifier:
         """
         return BC.make_classifier(mlp_weights_path)
 
-    def process_image(self, image_path, dims=False):
+    def process_image(self, image, dims=False):
         """Processes an image using imagecheck.check_and_crop function.
 
         Args:
-            image_path (str): Path to the image to be process.
+            image (str or numpy.ndarray): Path to the image to be process.
         Returns:
             A cropped image containing the worm.
         Raises:
@@ -60,14 +67,15 @@ class FAW_classifier:
             if the image does not meet the required standards or no
             worm is found.
         """
-        return ImageCheck.check_and_crop(image_path, dims)
+        image = self._load_image(image)
+        return ImageCheck.check_and_crop(image, dims)
 
-    def predict(self, image_path, preprocessed=False):
+    def predict(self, image, preprocessed=False):
         """Predict whether an image contains a Fall Armyworm.
 
         Args:
-            image_path (str): Path to the image containing object to be
-                classified.
+            image (str or numpy.ndarray): Path to the image containing object
+                to be classified.
             preprocessed (bool): If True, no processing will be applied to the
                 image as supplied image is expected to have already been
                 processed to meet the format requirements..
@@ -75,8 +83,9 @@ class FAW_classifier:
         Returns:
             True if Fall Armyworm detected, else False.
         """
+        image = self._load_image(image)
         if not preprocessed:
-            image = self.process_image(image_path, IMG_DIMS)
+            image = self.process_image(image, IMG_DIMS)
         # reshape image to expected TF format (None, channels, height, width)
         image = np.asarray(image)
         image = np.expand_dims(image, axis=0)
@@ -84,7 +93,7 @@ class FAW_classifier:
         return self._classifier.predict(image)
 
 
-def detect_fallarmyworm(image_path, threshold=0.5):
+def detect_fallarmyworm(image, threshold=0.5, preprocessed=False):
     """Predicts whether an iamge contains a Fall Armyworm or not.
 
     Args:
@@ -96,7 +105,7 @@ def detect_fallarmyworm(image_path, threshold=0.5):
     """
     classifier = FAW_classifier()
 
-    if classifier.predict(image_path) > threshold:
+    if classifier.predict(image, preprocessed) > threshold:
         return True
 
     return False
