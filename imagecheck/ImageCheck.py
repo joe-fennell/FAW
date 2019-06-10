@@ -25,7 +25,7 @@ import pickle
 import math
 import pathlib
 import numpy as np
-import cv2 as cv
+import cv2
 from sklearn.cluster import MiniBatchKMeans
 
 # Globals
@@ -56,13 +56,13 @@ def _downscale_image(img, scale=1, dims=False):
     # downscales the image to make k means less resource intensive
 
     if dims:
-        return cv.resize(img, dsize=dims, interpolation=cv.INTER_AREA)
+        return cv2.resize(img, dsize=dims, interpolation=cv2.INTER_AREA)
 
     width = int(img.shape[1] * scale)
     height = int(img.shape[0] * scale)
     dim = (width, height)
 
-    resized = cv.resize(img, dim, interpolation=cv.INTER_AREA)
+    resized = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
 
     return resized, height, width
 
@@ -71,7 +71,7 @@ def _blur_check(img):
 
     # Use laplacian blur detection to reject blurry images
 
-    blur_var = cv.Laplacian(img, cv.CV_64F).var()
+    blur_var = cv2.Laplacian(img, cv2.CV_64F).var()
 
     if blur_var < 1.5:
         print(blur_var)
@@ -89,25 +89,25 @@ def _get_shape_factors(cnt):
     # 225405567_Measuring_Elongation_from_Shape_Boundary
 
     # aspect ratio
-    x, y, w, h = cv.boundingRect(cnt)
+    x, y, w, h = cv2.boundingRect(cnt)
     aspect_ratio = float(w)/h
 
     # extent
-    area = cv.contourArea(cnt)
+    area = cv2.contourArea(cnt)
     rect_area = w * h
     extent = float(area)/rect_area
 
     # solidity
-    hull = cv.convexHull(cnt)
-    hull_area = cv.contourArea(hull)
+    hull = cv2.convexHull(cnt)
+    hull_area = cv2.contourArea(hull)
     solidity = float(area)/hull_area
 
     # circularity
-    perimiter = cv.arcLength(cnt, True)
+    perimiter = cv2.arcLength(cnt, True)
     circularity = 4 * np.pi * area / (perimiter ** 2)
 
     # elongation
-    m = cv.moments(cnt)
+    m = cv2.moments(cnt)
     j = m['mu20'] + m['mu02']
     k = 4 * m['mu11']**2 + (m['mu20'] - m['mu02'])**2
     elongation = (j + k**0.5) / (j - k**0.5)
@@ -127,21 +127,22 @@ def _plot_contours(img, contours, h, w, scale_ratio):
 
     for contour in contours:
         scld = _scale_dims(contour, img, scale_ratio)
-        cv.rectangle(img, (scld[0], scld[1]),
-                     (scld[0]+scld[2], scld[1]+scld[3]), (255, 0, 0), 4)
+        cv2.rectangle(img, (scld[0], scld[1]),
+                      (scld[0]+scld[2], scld[1]+scld[3]),
+                      (255, 0, 0), 4)
 
-    cv.namedWindow('check', cv.WINDOW_NORMAL)
-    cv.imshow('check', img)
-    cv.resizeWindow('check', 800, 800)
-    cv.waitKey(0)
-    cv.destroyAllWindows()
+    cv2.namedWindow('check', cv2.WINDOW_NORMAL)
+    cv2.imshow('check', img)
+    cv2.resizeWindow('check', 800, 800)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 
 def _scale_dims(contour, img, scale_ratio):
 
     # scale up dimensions according to scale ratio
 
-    br_dims = cv.boundingRect(contour)
+    br_dims = cv2.boundingRect(contour)
     scld = [int(i / scale_ratio) for i in br_dims]
     # add 2% buffer to prevent minor clipping of AOI
     (h, w) = img.shape[:2]
@@ -171,7 +172,7 @@ def _contour_sorting(contours, hierarchy, pixels, h, w):
     # ignore any contours that touch the image border or are too small
     contours_accepted = []
     for contour in parent_contours:
-        if cv.contourArea(contour) < (pixels/100):
+        if cv2.contourArea(contour) < (pixels/100):
             # ignore contours of > 1% pixel area
             continue
         x_coords = contour[:, :, 0].flatten()
@@ -185,7 +186,7 @@ def _contour_sorting(contours, hierarchy, pixels, h, w):
         contours_accepted.append(contour)
 
     if len(contours_accepted) == 0:
-        raise ImageCheckError("No suitable foreground objects found.")
+        raise ObjectMissingError("No suitable foreground objects found.")
 
     # NOTE: if only one parent contour, it is assume to be the worm
     if len(contours_accepted) == 1:
@@ -213,12 +214,12 @@ def _contour_sorting(contours, hierarchy, pixels, h, w):
         return worm_contours[0]
 
     if len(worm_contours) == 0:
-        raise ImageCheckError("Zero potential worm contours identified.")
+        raise WormMissingError("Zero potential worm contours identified.")
 
-    raise ImageCheckError("More than one potential worm contour found.")
+    raise MultipleWormsError("More than one potential worm contour found.")
 
 
-def check_and_crop(img_location, dims=False):
+def check_and_crop(img_arg, dims=False):
     """Finds parent contours in an image, gets shape factors for those contours
     then crops the image to the area of interest containing the worm.
 
@@ -233,22 +234,26 @@ def check_and_crop(img_location, dims=False):
         - A preset blur threshold
 
     Args:
-        img_location (str): String containing the location of the image file.
+        img_arg (str or numpy.ndarray): String containing the location of the
+            image file.
         dims (tuple): Required height and width for the image in format
         (height, width)
 
     Returns:
-        numpy.array: Contains the cropped image as a an array of shape
+        numpy.ndarray: Contains the cropped image as a an array of shape
         (h, w, 3).
 
     Raises:
-        ImageCheckError : Any image rejections (border contours, blur,
-        no worm etc.) raise this error with relevant error message.
-
-
+        ObjectMissingError: No foreground objects found in image.
+        WormMissingError: No worm found in image.
+        MultipleWormsError: Two or more worms found in image.
+        TooBlurryError: Image too blurry.
     """
 
-    img = cv.imread(img_location)
+    # load from string if file path passed rather than ndarray
+    img = img_arg
+    if type(img_arg) is str:
+        img = cv2.imread(img_arg)
 
     # Save original image copy and downscale for k means
     img_copy = img.copy()
@@ -262,7 +267,7 @@ def check_and_crop(img_location, dims=False):
         pixels = h * w
 
     # go to LAB place for k means and reshape
-    img = cv.cvtColor(img, cv.COLOR_BGR2LAB)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
     img = img.reshape((img.shape[0] * img.shape[1], 3))
 
     # k means cluster to find two dominant colour groups
@@ -274,30 +279,32 @@ def check_and_crop(img_location, dims=False):
     quant = quant.reshape((h, w, 3))
 
     # come out of LAB space
-    quant = cv.cvtColor(quant, cv.COLOR_LAB2BGR)
-    quant = cv.cvtColor(quant, cv.COLOR_BGR2GRAY)
+    quant = cv2.cvtColor(quant, cv2.COLOR_LAB2BGR)
+    quant = cv2.cvtColor(quant, cv2.COLOR_BGR2GRAY)
 
     # get foreground objects colour code
     fg_code, bg_code = _get_colour_codes(quant)
 
     # reject if codes could not be found, ie. picture is uniform colour
     if not fg_code:
-        raise ImageCheckError("Could not locate any foreground objects.")
+        raise ObjectMissingError("Could not locate any foreground objects.")
 
     if fg_code > bg_code:
-        ret, thresh = cv.threshold(quant, fg_code - 1, 1, cv.THRESH_BINARY)
+        ret, thresh = cv2.threshold(quant, fg_code - 1, 1,
+                                    cv2.THRESH_BINARY)
     else:
-        ret, thresh = cv.threshold(quant, fg_code + 1, 1, cv.THRESH_BINARY_INV)
+        ret, thresh = cv2.threshold(quant, fg_code + 1, 1,
+                                    cv2.THRESH_BINARY_INV)
 
     # perform a small kernel closing operation to smooth noise around contour
     # edges - kernal size based on downscaled image dimensions
     kernel = np.ones((int(h * MORPH_KERNAL_RATIO),
                       int(h * MORPH_KERNAL_RATIO)), np.uint8)
-    img_closed = cv.morphologyEx(thresh, cv.MORPH_CLOSE, kernel)
+    img_closed = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
 
     # get contours
-    contours, hierarchy = cv.findContours(img_closed.copy(), cv.RETR_TREE,
-                                          cv.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(img_closed.copy(), cv2.RETR_TREE,
+                                           cv2.CHAIN_APPROX_SIMPLE)
 
     worm_contour = _contour_sorting(contours, hierarchy, pixels, h, w)
 
@@ -309,7 +316,7 @@ def check_and_crop(img_location, dims=False):
 
     # blur check
     if not _blur_check(crop_img):
-        raise ImageCheckError("Image too blurry.")
+        raise TooBlurryError("Image too blurry.")
 
     if dims:
         crop_img = _downscale_image(crop_img, dims=dims)
@@ -320,4 +327,25 @@ def check_and_crop(img_location, dims=False):
 class ImageCheckError(Exception):
     """Used for custom error messages to do with image checking and
     segmentation."""
+    pass
+
+
+class ObjectMissingError(Exception):
+    """Error raised when no foreground objects are detected in an image."""
+    pass
+
+
+class WormMissingError(Exception):
+    """Error raised when no worm/caterpillar like object found in an image."""
+    pass
+
+
+class MultipleWormsError(Exception):
+    """Error raised when more than one potential worm contour found in an
+    image."""
+    pass
+
+
+class TooBlurryError(Exception):
+    """Error raised when an image is too blurry."""
     pass
