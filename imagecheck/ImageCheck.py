@@ -324,12 +324,6 @@ def check_and_crop(img_arg, dims=False):
     return crop_img
 
 
-class ImageCheckError(Exception):
-    """Used for custom error messages to do with image checking and
-    segmentation."""
-    pass
-
-
 class ObjectMissingError(Exception):
     """Error raised when no foreground objects are detected in an image."""
     pass
