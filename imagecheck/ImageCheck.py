@@ -192,12 +192,15 @@ def _contour_sorting(contours, hierarchy, pixels, h, w):
     if len(contours_accepted) == 1:
         return contours_accepted[0]
 
+    # If there is more than one worm contour present, load the worm contour
+    # finder models
+
     # get relative path for model loads to resolve issues with file locations
-    base_path = str(pathlib.Path(__file__).parent)
+    base_path = str(pathlib.Path(__file__).parents[1])
     contour_mlp = pickle.load(
-        open(base_path + '../models/mlp_ForContoursPCA6.sav', 'rb'))
+        open(base_path + '/models/mlp_ForContoursPCA6.sav', 'rb'))
     contour_pca = pickle.load(
-        open(base_path + '../models/ContoursPCA6.sav', 'rb'))
+        open(base_path + '/models/ContoursPCA6.sav', 'rb'))
 
     worm_contours = []
 
