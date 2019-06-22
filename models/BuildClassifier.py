@@ -128,6 +128,7 @@ def make_classifier(weights_path=None):
     base_model = ResNet18(input_shape=(IMG_W, IMG_H, 3),
                           weights='imagenet',
                           include_top=False)
+
     # MLP cap
     mlp_model = Sequential()
     mlp_model.add(Flatten(input_shape=MLP_INPUT))

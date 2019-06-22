@@ -43,6 +43,10 @@ class FAW_classifier:
         """Loads an image from array or string."""
         if type(image) is str:
             image = cv2.imread(image)
+
+        if image is None:
+            raise ImageCheck.NotAnImageError
+
         return image
 
     def load_classifier(self, mlp_weights_path):

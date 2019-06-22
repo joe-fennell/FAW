@@ -103,7 +103,7 @@ class FAWThreadedServer:
         logging.debug("Server started and listening.")
         while True:
             client, address = self.sock.accept()
-            client.settimeout(60)
+            client.settimeout(30)
             threading.Thread(target=self.handle_client,
                              args=(client, address), daemon=True).start()
 
@@ -173,6 +173,7 @@ class FAWThreadedServer:
 
             if first_signal != START:  # If starting delimiter not found
                 respond_and_shutdown(DWLD_FAIL)
+                return
             logging.debug("Conn {}: START_MESSAGE signal received.".format(
                 address))
 
@@ -191,18 +192,21 @@ class FAWThreadedServer:
 
                 message = message + data
 
-            # prevent further receives from the client to prevent double send
-            client.send(DWLD_SUCC)
+            #  after END_MESSAGE stop further receives from the client
+            # to prevent double send
             client.shutdown(socket.SHUT_RD)
-            logging.debug("Conn {}: Download successful. Sent code: {}".format(
-                          address,
-                          DWLD_SUCC))
 
             # decode the message and extract the data
             is_valid, client_data = self.decode_message(message, address)
 
             if not is_valid:
                 respond_and_shutdown(DWLD_FAIL)
+                return
+
+            client.send(DWLD_SUCC)
+            logging.debug("Conn {}: Download successful. Sent code: {}".format(
+                          address,
+                          DWLD_SUCC))
 
             # queue the image for classification in the main thread
             self.classification_queue.put((client, client_data))
@@ -224,8 +228,12 @@ class FAWThreadedServer:
         client_data = {'received_datetime': str(datetime.datetime.now()),
                        'client_address': address,
                        'gps': None,
-                       'img': None,
+                       'img': b'',
                        'FAW_classification': None}
+
+        if SOF not in message:
+            return False, None
+
         [gps, img_data] = message.split(SOF)
 
         if gps[:4] != GPS or LONG not in gps:
@@ -249,9 +257,8 @@ class FAWThreadedServer:
         Returns:
             str: four letter result code to be sent back to the client.
         """
-        is_valid, image = self.validate_image(image)
-
-        if not is_valid:
+        valid, image = self.validate_and_load_image(image)
+        if not valid:
             result = INVALID
             return result
 
@@ -271,22 +278,25 @@ class FAWThreadedServer:
 
         return result
 
-    def validate_image(self, image):
-        """Validates an img_byte string by loading it in to OpenCV.
+    def validate_and_load_image(self, image_bytes):
+        """Load the image from bytes and check it is valid.
 
         Args:
-            img_bytes (b'string): Contaings the bytes that constitute the
-            image.
-        """
+            image_bytes (bytes): byte string of image sent from client.
+
+        Returns:
+            bool: True if valid image, otherwise False.
+            img (np.np_array): Loaded image if valid, otherwise None."""
         try:
-            image_bytes = np.asarray(bytearray(image),
-                                     dtype=np.uint8)
-            img = cv2.imdecode(image_bytes, cv2.IMREAD_COLOR)
-            return True, img
-        except Exception as e:
-            logging.debug("Exception raised while validating image: {}".format(
-                e))
+            nparr = np.fromstring(image_bytes, np.uint8)
+            img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        except Exception:
             return False, None
+
+        if img is None:
+            return False, None
+
+        return True, img
 
 
 server = FAWThreadedServer(HOST, PORT)
