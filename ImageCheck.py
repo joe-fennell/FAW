@@ -258,6 +258,10 @@ def check_and_crop(img_arg, dims=False):
     if type(img_arg) is str:
         img = cv2.imread(img_arg)
 
+    # initial blur check
+    if not _blur_check(img):
+        raise TooBlurryError("Image too blurry.")
+
     # Save original image copy and downscale for k means
     img_copy = img.copy()
     (h, w) = img.shape[:2]
@@ -316,10 +320,6 @@ def check_and_crop(img_arg, dims=False):
     scld = _scale_dims(worm_contour, img_copy, scale_ratio)
 
     crop_img = img_copy[scld[1]:scld[1]+scld[3], scld[0]:scld[0]+scld[2]]
-
-    # blur check
-    if not _blur_check(crop_img):
-        raise TooBlurryError("Image too blurry.")
 
     if dims:
         crop_img = _downscale_image(crop_img, dims=dims)

@@ -18,8 +18,8 @@ import pathlib
 import argparse
 import cv2
 import numpy as np
-import imagecheck.ImageCheck as ImageCheck
-import models.BuildClassifier as BC
+from FAW import ImageCheck
+from FAW import BuildClassifier as BC
 
 
 # GLOBALS

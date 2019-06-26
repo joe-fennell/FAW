@@ -37,7 +37,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 
 # GLOBALS
-PROJ_DIR = str(pathlib.Path(__file__).parents[1])
+PROJ_DIR = str(pathlib.Path(__file__).parent)
 TRAIN_DIR = PROJ_DIR + '/data/train'
 VALIDATION_DIR = PROJ_DIR + '/data/validation'
 KMEANS_3 = pickle.load(open(PROJ_DIR + '/models/kmeans_224.sav', 'rb'))
