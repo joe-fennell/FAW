@@ -43,14 +43,22 @@ def send_image_to_server(filepath, coords):
                                classification result.
         error (str or None): Str if error message, otherwise None.
     """
-    with open(path, 'rb') as f:
+    # Read the image in to memory.
+    with open(filepath, 'rb') as f:
         img_bytes = f.read()
+        
+    # Start the socket to connect to the FAW_server running in a seperate
+    # process.
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.connect((HOST, PORT))
 
+    # Send the message over in the required format.
     sock.send(START)
     sock.send(GPS)
-    sock.send(b'{}'.format(coords[0]))
+    sock.send(str.encode(str(coords[0])))
     sock.send(LONG)
-    sock.send(b'{}'.format(coords[1]))
+    sock.send(str.encode(str(coords[1])))
     sock.send(SOF)
     sock.send(img_bytes)
     sock.send(END_MESSAGE)
@@ -64,20 +72,22 @@ def send_image_to_server(filepath, coords):
 
     if response_2 == b'TRUE':
         valid, result, error = (True, True, None)
-    if response_2 == b'FALS':
+    elif response_2 == b'FALS':
         valid, result, error = (True, False, None)
-    if response_2 == b'IVLD':
+    elif response_2 == b'IVLD':
         valid, result, error = (False, None, "Not a valid image file.")
-    if response_2 == b'MISS':
+    elif response_2 == b'MISS':
         valid, result, error = (False, None, "Not foreground object was "
                                 "detected in the image.")
-    if response_2 == b'NONE':
+    elif response_2 == b'NONE':
         valid, result, error = (False, None, "No caterpillar found in the image.")
-    if response_2 == b'MANY':
+    elif response_2 == b'MANY':
         valid, result, error = (False, None, "More than one caterpillar found "
                                 "in the image.")
-    if response_2 == b'BLUR':
+    elif response_2 == b'BLUR':
         valid, result, error = (False, None, "Image too blurry.")
+    else:
+        valid, result, error = (False, None, "Unknown error occurred.")
 
     return valid, result, error
 
