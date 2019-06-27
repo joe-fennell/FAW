@@ -31,6 +31,7 @@ from sklearn.cluster import MiniBatchKMeans
 # Globals
 SCALED_IMAGE_PIXELS = 50176  # 224 x 224 image pixels
 MORPH_KERNAL_RATIO = 0.01
+BASE_PATH = str(pathlib.Path(__file__).parent)
 
 
 def _get_colour_codes(arr):
@@ -195,12 +196,11 @@ def _contour_sorting(contours, hierarchy, pixels, h, w):
     # If there is more than one worm contour present, load the worm contour
     # finder models
 
-    # get relative path for model loads to resolve issues with file locations
-    base_path = str(pathlib.Path(__file__).parents[1])
+    # load models into memory
     contour_mlp = pickle.load(
-        open(base_path + '/models/mlp_ForContoursPCA6.sav', 'rb'))
+        open(BASE_PATH + '/models/mlp_ForContoursPCA6.sav', 'rb'))
     contour_pca = pickle.load(
-        open(base_path + '/models/ContoursPCA6.sav', 'rb'))
+        open(BASE_PATH + '/models/ContoursPCA6.sav', 'rb'))
 
     worm_contours = []
 
