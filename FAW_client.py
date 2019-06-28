@@ -77,7 +77,7 @@ def send_image_to_server(filepath, coords):
     elif response_2 == b'IVLD':
         valid, result, error = (False, None, "Not a valid image file.")
     elif response_2 == b'MISS':
-        valid, result, error = (False, None, "Not foreground object was "
+        valid, result, error = (False, None, "No foreground object was "
                                 "detected in the image.")
     elif response_2 == b'NONE':
         valid, result, error = (False, None, "No caterpillar found in the image.")
