@@ -27,6 +27,7 @@ import pathlib
 import numpy as np
 import cv2
 from sklearn.cluster import MiniBatchKMeans
+import matplotlib.pyplot as plt
 
 # Globals
 SCALED_IMAGE_PIXELS = 50176  # 224 x 224 image pixels
@@ -193,32 +194,6 @@ def _contour_sorting(contours, hierarchy, pixels, h, w):
     if len(contours_accepted) == 1:
         return contours_accepted[0]
 
-    # If there is more than one worm contour present, load the worm contour
-    # finder models
-
-    # load models into memory
-    contour_mlp = pickle.load(
-        open(BASE_PATH + '/models/mlp_ForContoursPCA6.sav', 'rb'))
-    contour_pca = pickle.load(
-        open(BASE_PATH + '/models/ContoursPCA6.sav', 'rb'))
-
-    worm_contours = []
-
-    for contour in contours_accepted:
-        shape_factors = _get_shape_factors(contour)
-        sf_pca = contour_pca.transform([shape_factors])
-        if contour_mlp.predict(sf_pca) == 1:
-            worm_contours.append(contour)
-
-    # TODO: add in user visual check option if multiple contours found so that
-    # use can choose which contour to  be classified should multiple pass the
-    # worm contour test above.
-    if len(worm_contours) == 1:
-        return worm_contours[0]
-
-    if len(worm_contours) == 0:
-        raise WormMissingError("Zero potential worm contours identified.")
-
     raise MultipleWormsError("More than one potential worm contour found.")
 
 
@@ -288,6 +263,9 @@ def check_and_crop(img_arg, dims=False):
     # come out of LAB space
     quant = cv2.cvtColor(quant, cv2.COLOR_LAB2BGR)
     quant = cv2.cvtColor(quant, cv2.COLOR_BGR2GRAY)
+
+    plt.imshow(quant)
+    plt.show()
 
     # get foreground objects colour code
     fg_code, bg_code = _get_colour_codes(quant)
