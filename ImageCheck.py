@@ -21,13 +21,11 @@ threshold.
 # TODO: look at report structure etc for something to give out on the project
 # on method, differenty design options considered etc.
 
-import pickle
 import math
 import pathlib
 import numpy as np
 import cv2
 from sklearn.cluster import MiniBatchKMeans
-import matplotlib.pyplot as plt
 
 # Globals
 SCALED_IMAGE_PIXELS = 50176  # 224 x 224 image pixels
@@ -263,9 +261,6 @@ def check_and_crop(img_arg, dims=False):
     # come out of LAB space
     quant = cv2.cvtColor(quant, cv2.COLOR_LAB2BGR)
     quant = cv2.cvtColor(quant, cv2.COLOR_BGR2GRAY)
-
-    plt.imshow(quant)
-    plt.show()
 
     # get foreground objects colour code
     fg_code, bg_code = _get_colour_codes(quant)
