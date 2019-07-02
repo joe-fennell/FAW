@@ -23,10 +23,14 @@ def plot_metric(train, val, title):
     plt.plot(val, label='val', color='red', linestyle='--', alpha=0.5)
     plt.plot(smooth_data(train), label='smooth train', color='blue', linestyle='-')
     plt.plot(smooth_data(val), label='smooth val', color='red', linestyle='-')
+    if title == 'Accuracy':
+        plt.ylim(0.75, 1.02)
+        axes = plt.axes()
+        axes.set_yticks([0.75, 0.80, 0.85, 0.90, 0.95, 1.00])
     plt.title(title)
     plt.ylabel(title)
-    plt.xlabel('epoch')
-    plt.legend(['train', 'validation'], loc='upper left')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Validation'], loc='upper left')
     plt.savefig(title+'.png')
 
     return None
@@ -49,8 +53,8 @@ def compare(data):
     return None
 
 
-history = load_data('../bottleneck_history_rmsprop.json') #change this to your file
+history = load_data('../0002_finetuning_history_amsgrad_lr00001.json') #change this to your file
 compare(history)
-plot_metric(history['loss'], history['val_loss'], 'loss')
-plot_metric(history['acc'], history['val_acc'], 'accuracy')
+plot_metric(history['loss'], history['val_loss'], 'Loss')
+plot_metric(history['acc'], history['val_acc'], 'Accuracy')
 
