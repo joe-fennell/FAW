@@ -286,6 +286,8 @@ def check_and_crop(img_arg, dims=False):
     contours, hierarchy = cv2.findContours(img_closed.copy(), cv2.RETR_TREE,
                                            cv2.CHAIN_APPROX_SIMPLE)
 
+    _plot_contours(quant, contours, h, w, 1)
+
     worm_contour = _contour_sorting(contours, hierarchy, pixels, h, w)
 
     # crop image to selection - need to upscale values to original dims
