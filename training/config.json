@@ -1,6 +1,6 @@
 {
-    "training_dir": "/mnt/data/train",
-    "validation_dir": "/mnt/data/validation",
+    "training_dir": "/home/gworrall/Documents/FAW/data/sorted/first_set/train",
+    "validation_dir": "/home/gworrall/Documents/FAW/data/sorted/first_set/validation",
     "batch_size": 1,
     "img_width_height": [
         224,

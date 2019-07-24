@@ -12,6 +12,7 @@ import os
 import sys
 import logging
 import json
+import pathlib
 
 #TODO: next, training and validation image lists saved in training folder
 
@@ -88,7 +89,7 @@ def save_model(model, test_number):
         test_number (int): Unique test number used for the save folder name.
 
     Returns:
-        none
+        None
     """
 
     model_json = model.to_json()
@@ -109,7 +110,100 @@ def load_config():
 
     return config
 
- 
+
+def store_training_validation_file_list(data_paths, save_dir, train_num):
+    """Saves complete lists of the training and validation data in to the
+    training dir.
+
+    NOTE: Only detects images with .jpg extension.
+
+    Args:
+        data_paths (tuple): contains (training_data_path, validation_data_path)
+        save_dir (str): path to the dir where file lists will be saved
+        train_num (int): training run number
+
+    Returns:
+        None
+    """
+    training_dir = data_paths[0]
+    validation_dir = data_paths[1]
+
+    save_list = os.path.join(save_dir, '{}_train_valid_file_list.txt'.format(
+        train_num))
+
+
+    with open(save_list, "w") as f:
+
+        def get_images(path):
+
+            sub_dirs = [x[0] for x in os.walk(path)]
+            sub_dirs.sort()
+
+            for sub_dir in sub_dirs:
+                images = glob.glob(sub_dir + '/*.jpg')
+                
+                # for dirs containing jpgs, write the dir path and files to save_list
+                if len(images) > 0:
+                    f.write(sub_dir + "\n")
+                    for image in images:
+                        f.write("     " + pathlib.Path(image).name + "\n")
+
+        f.write("LIST OF FILES USED IN RUN {}\n".format(train_num))
+        f.write("===============================\n")
+
+        f.write("TRAINING\n")
+        f.write("--------\n")
+
+        get_images(training_dir)
+
+        f.write("VALIDATION\n")
+        f.write("----------\n")
+
+        get_images(validation_dir)
+
+
+def get_iterator(generator,
+                 data_dir,
+                 target_size,
+                 batch_size=batch_size,
+                 class_mode=None,
+                 shuffle=False):
+
+    """Returns a DirectoryIterator yielding tuples of (x, y) where x is a numpy
+    array containing a batch of images with shape (batch_size, *target_size,
+    channels) and y is a numpy array of corresponding labels.
+    https://keras.io/preprocessing/image/#flow_from_directory
+    
+    Args:
+        generator (keras.preprocessing.image.ImageDataGenerator): generator
+            object from the keras module
+        data_dir (str): path to the data directory
+        target_size (tuple): (image_width (int), image_height (int))
+        batch_size (int): size of the batches of data
+        class_mode (str, optional): see above keras docs
+        shuffle (bool, optional): whether to shuffle the data
+        
+    Returns:
+        DirectoryIterator: A DirectoryIterator yielding tuples of (x, y) where
+        x is a numpy array containing a batch of images with shape 
+        (batch_size,
+        *target_size,
+        channels)
+        and y is a numpy array of corresponding labels (from above docs)."""
+
+
+    iterator = generator.flow_from_directory(data_dir, target_size=target_size,
+                                             batch_size=batch_size,
+                                             class_mode=class_mode,
+                                             shuffle=shuffle)
+
+    return iterator
+
+
+
+
+
+     
 
 
 

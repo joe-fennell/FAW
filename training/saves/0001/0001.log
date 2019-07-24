@@ -1,3 +1,0 @@
-2019-07-19 08:57:38,637 [MainThread  ] [WARNI]  From /home/george/Documents/projects/fall_army_worm/code/worm_env/lib64/python3.6/site-packages/tensorflow/python/framework/op_def_library.py:263: colocate_with (from tensorflow.python.framework.ops) is deprecated and will be removed in a future version.
-Instructions for updating:
-Colocations handled automatically by placer.
