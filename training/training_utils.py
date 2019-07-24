@@ -11,6 +11,7 @@ import shutil
 import os
 import sys
 import logging
+import json
 
 #TODO: next, training and validation image lists saved in training folder
 
@@ -88,12 +89,27 @@ def save_model(model, test_number):
 
     Returns:
         none
-        """
+    """
 
     model_json = model.to_json()
 
     with open("model_structure.json", "w") as f:
         f.write(model_json)
+
+
+def load_config():
+    """Loads the config data from the config file.
+
+    Returns:
+        dict
+    """
+    config_file = os.path.dirname(os.path.abspath(__file__)) + '/config.json'
+    with open(config_file, 'r') as f:
+        config = json.load(f)
+
+    return config
+
+ 
 
 
 

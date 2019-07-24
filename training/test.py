@@ -15,18 +15,19 @@ from keras.preprocessing.image import array_to_img
 from classification_models.resnet import ResNet18
 from skimage.segmentation import slic
 from training_utils import (setup_training_run_folder, get_num_samples,
-                                save_model)
+                                save_model, load_config)
 
 
 # Set TensorFlow config
-config = tf.ConfigProto()
-config.gpu_options.per_process_gpu_memory_fraction = 0.8
-set_session(tf.Session(config=config))
+tf_config = tf.ConfigProto()
+tf_config.gpu_options.per_process_gpu_memory_fraction = 0.8
+set_session(tf.Session(config=tf_config))
 
-# Import config from config file
-config_file = os.path.dirname(os.path.abspath(__file__)) + '/config.json'
-with open(config_file, 'r') as f:
-    config = json.load(f)
+
+# Get config
+config = load_config()
+print(config)
+
 
 # Initial setup
 TRAINING_NUMBER, SAVE_DIR = setup_training_run_folder()
