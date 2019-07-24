@@ -1,0 +1,13 @@
+{
+    "training_dir": "/mnt/data/train",
+    "validation_dir": "/mnt/data/validation",
+    "batch_size": 1,
+    "img_width_height": [
+        224,
+        224
+    ],
+    "model_parameters": {
+        "mlp_dropout_rate": 0.5,
+        "mlp_learning_rate": 0.0001
+    }
+}
