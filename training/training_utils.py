@@ -13,8 +13,9 @@ import sys
 import logging
 import json
 import pathlib
-
-#TODO: next, training and validation image lists saved in training folder
+import pickle
+import cv2
+from FAW import ImageCheck
 
 
 def setup_training_run_folder():
@@ -46,6 +47,12 @@ def setup_training_run_folder():
     save_folder = 'saves/{}'.format(number)
     os.mkdir(save_folder)
 
+    # copy the current config file over for posterity
+    config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                               'config.json')
+    new_path = os.path.join(save_folder, '{}_config.json'.format(number))
+    shutil.copyfile(config_path, new_path)
+
     # Set up logging to file
     logFormatter = logging.Formatter(
         "%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
@@ -62,8 +69,50 @@ def setup_training_run_folder():
     return number, save_folder
 
 
-def get_num_samples(path):
+def preprocess_images(images_dir, image_dims):
+    """Preprocesses the training data and saves a list of processed files to
+    stop multiple processings of the same file.
 
+    Args:
+        images_dir (str): path to the images directory
+        image_dims (tuple): (width, height, depth) of images
+    Returns:
+        None
+    """
+    find_str = images_dir + '/**/*.jpg'
+    images = glob.glob(find_str, recursive=True)
+    num_samples = get_num_samples(images_dir)
+
+    # Load in the already processed file list
+    proc_list_path = images_dir + '/processed_list.txt'
+    if os.path.isfile(proc_list_path):
+        with open(proc_list_path) as f:
+            proc_list = f.read().split('\n')
+    else:
+        proc_list = []
+    
+    i = 1
+    for image in images:
+        print("Processing {}/{}".format(i, num_samples))
+        if image not in proc_list:
+            try:
+                processed_image = ImageCheck.check_and_crop(image)
+            except (ImageCheck.ObjectMissingError,
+                    ImageCheck.WormMissingError,
+                    ImageCheck.MultipleWormsError,
+                    ImageCheck.TooBlurryError) as e:
+                print("Image at: \n{} \n Produced error: {} \n Removing"
+                      " image".format(image, e))
+                os.remove(image)
+                i = i + 1
+                continue
+            cv2.imwrite(image, processed_image)
+            with open(proc_list_path, 'a') as f:
+                f.write(image + '\n')
+        i = i + 1
+
+    
+def get_num_samples(path):
     """Finds the number of .jpg samples in a given dir.
 
     Args:
@@ -165,7 +214,7 @@ def store_training_validation_file_list(data_paths, save_dir, train_num):
 def get_iterator(generator,
                  data_dir,
                  target_size,
-                 batch_size=batch_size,
+                 batch_size=1,
                  class_mode=None,
                  shuffle=False):
 
@@ -198,12 +247,3 @@ def get_iterator(generator,
                                              shuffle=shuffle)
 
     return iterator
-
-
-
-
-
-     
-
-
-

@@ -1,0 +1,9 @@
+2019-07-28 17:10:00,718 [MainThread  ] [WARNI]  From /home/gworrall/Documents/faw_env/lib/python3.6/site-packages/tensorflow/python/framework/op_def_library.py:263: colocate_with (from tensorflow.python.framework.ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Colocations handled automatically by placer.
+2019-07-28 17:11:16,470 [MainThread  ] [WARNI]  From /home/gworrall/Documents/faw_env/lib/python3.6/site-packages/keras/backend/tensorflow_backend.py:3445: calling dropout (from tensorflow.python.ops.nn_ops) with keep_prob is deprecated and will be removed in a future version.
+Instructions for updating:
+Please use `rate` instead of `keep_prob`. Rate should be set to `rate = 1 - keep_prob`.
+2019-07-28 17:11:16,547 [MainThread  ] [WARNI]  From /home/gworrall/Documents/faw_env/lib/python3.6/site-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.cast instead.
