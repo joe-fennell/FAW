@@ -1,6 +1,6 @@
 {
-    "training_dir": "/home/gworrall/Documents/FAW/data/sorted/first_set/train",
-    "validation_dir": "/home/gworrall/Documents/FAW/data/sorted/first_set/validation",
+    "training_dir": "/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/train",
+    "validation_dir": "/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/validation",
     "batch_size": 1,
     "img_input_shape": [
         224,
@@ -9,6 +9,10 @@
     ],
     "model_parameters": {
         "mlp_dropout_rate": 0.5,
-	"mlp_optimizer_lr": 0.0001
+	"mlp_optimizer_lr": 0.00001,
+	"mlp_num_training_epochs": 1,
+	"cnn_num_trainable_layers": 1,
+	"cnn_learning_rate": 0.000001,
+	"cnn_num_training_epochs": 1 
     }
 }

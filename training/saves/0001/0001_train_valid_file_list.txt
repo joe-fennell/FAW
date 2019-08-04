@@ -2,7 +2,7 @@ LIST OF FILES USED IN RUN 0001
 ===============================
 TRAINING
 --------
-/home/gworrall/Documents/FAW/data/sorted/first_set/train/faw/first_set/1
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/train/faw/1
      img0032.jpg
      img0070.jpg
      img0022.jpg
@@ -48,7 +48,7 @@ TRAINING
      img0045.jpg
      img0035.jpg
      img0042.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/train/faw/first_set/2
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/train/faw/2
      img0353.jpg
      img0302.jpg
      img0272.jpg
@@ -67,6 +67,7 @@ TRAINING
      img0266.jpg
      img0306.jpg
      img0251.jpg
+     img0284.jpg
      img0260.jpg
      img0314.jpg
      img0309.jpg
@@ -123,11 +124,12 @@ TRAINING
      img0318.jpg
      img0355.jpg
      img0298.jpg
+     img0267.jpg
      img0313.jpg
      img0320.jpg
      img0295.jpg
      img0270.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/train/faw/first_set/3
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/train/faw/3
      img0481.jpg
      img0473.jpg
      img0466.jpg
@@ -179,7 +181,7 @@ TRAINING
      img0521.jpg
      img0453.jpg
      img0490.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/train/faw/first_set/4
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/train/faw/4
      img0544.jpg
      img0543.jpg
      img0557.jpg
@@ -204,7 +206,7 @@ TRAINING
      img0541.jpg
      img0529.jpg
      img0527.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/train/faw/first_set/5
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/train/faw/5
      img0695.jpg
      img0788.jpg
      img0744.jpg
@@ -223,9 +225,9 @@ TRAINING
      img0700.jpg
      img0730.jpg
      img0704.jpg
-     img0752.jpg
      img0794.jpg
      img0773.jpg
+     img0770.jpg
      img0774.jpg
      img0712.jpg
      img0699.jpg
@@ -245,10 +247,8 @@ TRAINING
      img0692.jpg
      img0761.jpg
      img0749.jpg
-     img0707.jpg
      img0724.jpg
      img0719.jpg
-     img0696.jpg
      img0750.jpg
      img0780.jpg
      img0748.jpg
@@ -268,6 +268,7 @@ TRAINING
      img0710.jpg
      img0717.jpg
      img0779.jpg
+     img0713.jpg
      img0753.jpg
      img0714.jpg
      img0702.jpg
@@ -279,9 +280,8 @@ TRAINING
      img0740.jpg
      img0781.jpg
      img0727.jpg
-     img0757.jpg
      img0732.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/train/faw/first_set/6
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/train/faw/6
      img0975.jpg
      img0905.jpg
      img1032.jpg
@@ -306,6 +306,7 @@ TRAINING
      img0855.jpg
      img1030.jpg
      img0858.jpg
+     img0868.jpg
      img0867.jpg
      img0840.jpg
      img0995.jpg
@@ -469,7 +470,7 @@ TRAINING
      img0921.jpg
      img0878.jpg
      img1070.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/train/faw/first_set/7
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/train/faw/7
      img9820.jpg
      img9872.jpg
      img9875.jpg
@@ -512,7 +513,7 @@ TRAINING
      img9877.jpg
      img9855.jpg
      img9858.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/train/notfaw/1
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/train/notfaw/1
      img0007.jpg
      img0001.jpg
      img0014.jpg
@@ -523,7 +524,7 @@ TRAINING
      img0017.jpg
      img0016.jpg
      img0011.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/train/notfaw/10
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/train/notfaw/10
      img9925.jpg
      img9941.jpg
      img9923.jpg
@@ -552,7 +553,7 @@ TRAINING
      img9950.jpg
      img9944.jpg
      img9939.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/train/notfaw/11
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/train/notfaw/11
      img9983.jpg
      img9999.jpg
      img9987.jpg
@@ -574,7 +575,7 @@ TRAINING
      img9980.jpg
      img9986.jpg
      img9984.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/train/notfaw/2
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/train/notfaw/2
      img0149.jpg
      img0123.jpg
      img0106.jpg
@@ -644,7 +645,7 @@ TRAINING
      img0146.jpg
      img0095.jpg
      img0094.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/train/notfaw/3
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/train/notfaw/3
      img0201.jpg
      img0192.jpg
      img0164.jpg
@@ -708,7 +709,7 @@ TRAINING
      img0235.jpg
      img0190.jpg
      img0225.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/train/notfaw/4
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/train/notfaw/4
      img0444.jpg
      img0388.jpg
      img0408.jpg
@@ -773,7 +774,7 @@ TRAINING
      img0384.jpg
      img0391.jpg
      img0375.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/train/notfaw/5
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/train/notfaw/5
      img0644.jpg
      img0602.jpg
      img0568.jpg
@@ -845,7 +846,6 @@ TRAINING
      img0592.jpg
      img0668.jpg
      img0574.jpg
-     img0678.jpg
      img0593.jpg
      img0617.jpg
      img0569.jpg
@@ -874,7 +874,7 @@ TRAINING
      img0587.jpg
      img0677.jpg
      img0651.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/train/notfaw/6
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/train/notfaw/6
      img9666.jpg
      img9682.jpg
      img9692.jpg
@@ -913,7 +913,7 @@ TRAINING
      img9664.jpg
      img9669.jpg
      img9663.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/train/notfaw/7
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/train/notfaw/7
      img9733.jpg
      img9756.jpg
      img9693.jpg
@@ -961,7 +961,7 @@ TRAINING
      img9718.jpg
      img9723.jpg
      img9711.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/train/notfaw/8
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/train/notfaw/8
      img9778.jpg
      img9811.jpg
      img9765.jpg
@@ -1001,7 +1001,7 @@ TRAINING
      img9777.jpg
      img9810.jpg
      img9784.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/train/notfaw/9
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/train/notfaw/9
      img9905.jpg
      img9899.jpg
      img9892.jpg
@@ -1030,13 +1030,13 @@ TRAINING
      img9893.jpg
 VALIDATION
 ----------
-/home/gworrall/Documents/FAW/data/sorted/first_set/validation/faw/1
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/validation/faw/1
      img0018.jpg
      img0059.jpg
      img0069.jpg
      img0034.jpg
      img0056.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/validation/faw/2
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/validation/faw/2
      img0322.jpg
      img0299.jpg
      img0312.jpg
@@ -1053,7 +1053,7 @@ VALIDATION
      img0345.jpg
      img0311.jpg
      img0263.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/validation/faw/3
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/validation/faw/3
      img0462.jpg
      img0513.jpg
      img0508.jpg
@@ -1067,7 +1067,7 @@ VALIDATION
      img0470.jpg
      img0454.jpg
      img0554.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/validation/faw/4
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/validation/faw/4
      img0739.jpg
      img0785.jpg
      img0729.jpg
@@ -1087,7 +1087,7 @@ VALIDATION
      img0686.jpg
      img0746.jpg
      img0736.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/validation/faw/5
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/validation/faw/5
      img0885.jpg
      img0899.jpg
      img0874.jpg
@@ -1095,13 +1095,11 @@ VALIDATION
      img0892.jpg
      img0882.jpg
      img0804.jpg
-     img0869.jpg
      img0838.jpg
      img0834.jpg
      img0823.jpg
      img0816.jpg
      img0824.jpg
-     img0894.jpg
      img0827.jpg
      img0845.jpg
      img0901.jpg
@@ -1114,7 +1112,7 @@ VALIDATION
      img0872.jpg
      img0881.jpg
      img0860.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/validation/faw/6
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/validation/faw/6
      img0924.jpg
      img0918.jpg
      img0949.jpg
@@ -1127,7 +1125,7 @@ VALIDATION
      img0970.jpg
      img0917.jpg
      img0934.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/validation/faw/7
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/validation/faw/7
      img9863.jpg
      img9867.jpg
      img9878.jpg
@@ -1138,7 +1136,7 @@ VALIDATION
      img9847.jpg
      img9834.jpg
      img9827.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/validation/faw/8
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/validation/faw/8
      img0993.jpg
      img1074.jpg
      img1001.jpg
@@ -1168,13 +1166,13 @@ VALIDATION
      img1007.jpg
      img1054.jpg
      img1031.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/validation/notfaw/1
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/validation/notfaw/1
      img0005.jpg
      img0004.jpg
      img0009.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/validation/notfaw/10
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/validation/notfaw/10
      img9985.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/validation/notfaw/2
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/validation/notfaw/2
      img0152.jpg
      img0093.jpg
      img0074.jpg
@@ -1191,7 +1189,7 @@ VALIDATION
      img0104.jpg
      img0148.jpg
      img0139.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/validation/notfaw/3
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/validation/notfaw/3
      img0167.jpg
      img0166.jpg
      img0170.jpg
@@ -1209,9 +1207,10 @@ VALIDATION
      img0241.jpg
      img0211.jpg
      img0193.jpg
+     img0186.jpg
      img0218.jpg
      img0237.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/validation/notfaw/4
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/validation/notfaw/4
      img0432.jpg
      img0398.jpg
      img0381.jpg
@@ -1230,7 +1229,7 @@ VALIDATION
      img0423.jpg
      img0386.jpg
      img0419.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/validation/notfaw/5
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/validation/notfaw/5
      img0576.jpg
      img0560.jpg
      img0671.jpg
@@ -1248,7 +1247,7 @@ VALIDATION
      img0653.jpg
      img0599.jpg
      img0635.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/validation/notfaw/6
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/validation/notfaw/6
      img9653.jpg
      img9646.jpg
      img9671.jpg
@@ -1262,7 +1261,7 @@ VALIDATION
      img9637.jpg
      img9686.jpg
      img9676.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/validation/notfaw/7
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/validation/notfaw/7
      img9728.jpg
      img9750.jpg
      img9725.jpg
@@ -1276,7 +1275,7 @@ VALIDATION
      img9701.jpg
      img9720.jpg
      img9707.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/validation/notfaw/8
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/validation/notfaw/8
      img9794.jpg
      img9792.jpg
      img9796.jpg
@@ -1289,7 +1288,7 @@ VALIDATION
      img9801.jpg
      img9787.jpg
      img9780.jpg
-/home/gworrall/Documents/FAW/data/sorted/first_set/validation/notfaw/9
+/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/validation/notfaw/9
      img9932.jpg
      img9942.jpg
      img9948.jpg

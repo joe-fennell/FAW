@@ -25,7 +25,10 @@ def setup_training_run_folder():
 
     Returns:
         int: Training run number.
-        str: Path to training run save folder."""
+        str: Path to training run save folder.
+        logging.Logger: dedicated logger used to record script messages to
+        log file and stdout.
+    """
 
     number = input("Please enter the training run number (eg. 1, 2, 3): ")
 
@@ -53,29 +56,36 @@ def setup_training_run_folder():
     new_path = os.path.join(save_folder, '{}_config.json'.format(number))
     shutil.copyfile(config_path, new_path)
 
-    # Set up logging to file
-    logFormatter = logging.Formatter(
-        "%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
-    rootLogger = logging.getLogger()
+    # Set up loggers to write to file
+    rootLogger = logging.getLogger()  # logger used by other modules
+    rootLogger.setLevel(20)
+    fawLogger = logging.Logger('FAW_logger')  # dedicated FAW logger
+    fawLogger.setLevel(10)
 
+    streamFormatter = logging.Formatter(
+        "%(message)s")
+    streamHandler = logging.StreamHandler()
+    streamHandler.setFormatter(streamFormatter)
+    fawLogger.addHandler(streamHandler)
+    
+    logFormatter = logging.Formatter(
+        "%(asctime)s [%(levelname)-5.5s]  %(message)s")
     fileHandler = logging.FileHandler("{0}/{1}.log".format(save_folder, number))
     fileHandler.setFormatter(logFormatter)
+    fawLogger.addHandler(fileHandler)
     rootLogger.addHandler(fileHandler)
 
-    consoleHandler = logging.StreamHandler(sys.stdout)
-    consoleHandler.setFormatter(logFormatter)
-    rootLogger.addHandler(consoleHandler)
-
-    return number, save_folder
+    return number, save_folder, fawLogger
 
 
-def preprocess_images(images_dir, image_dims):
+def preprocess_images(images_dir, image_dims, logger):
     """Preprocesses the training data and saves a list of processed files to
     stop multiple processings of the same file.
 
     Args:
         images_dir (str): path to the images directory
         image_dims (tuple): (width, height, depth) of images
+        logger (logging.Logger): logger object used to log messages
     Returns:
         None
     """
@@ -93,22 +103,28 @@ def preprocess_images(images_dir, image_dims):
     
     i = 1
     for image in images:
-        print("Processing {}/{}".format(i, num_samples))
+        image_name = image.split('/')[-1]
         if image not in proc_list:
+            logger.info("Processing %s", " {} - {}/{}".format(
+                image_name, i, num_samples))
             try:
                 processed_image = ImageCheck.check_and_crop(image)
             except (ImageCheck.ObjectMissingError,
                     ImageCheck.WormMissingError,
                     ImageCheck.MultipleWormsError,
                     ImageCheck.TooBlurryError) as e:
-                print("Image at: \n{} \n Produced error: {} \n Removing"
-                      " image".format(image, e))
+                logger.info("Processing Error: %s",
+                             "Image at: \n{} \n Produced error: {} \n Removing"
+                             " image".format(image, e))
                 os.remove(image)
                 i = i + 1
                 continue
             cv2.imwrite(image, processed_image)
             with open(proc_list_path, 'a') as f:
                 f.write(image + '\n')
+        else:
+            logger.info("Skipping %s", " {} (already processed) - {}/{}".format(
+                image_name, i, num_samples))
         i = i + 1
 
     
@@ -160,7 +176,8 @@ def load_config():
     return config
 
 
-def store_training_validation_file_list(data_paths, save_dir, train_num):
+def store_training_validation_file_list(data_paths, save_dir, train_num,
+                                        logger):
     """Saves complete lists of the training and validation data in to the
     training dir.
 
@@ -170,6 +187,7 @@ def store_training_validation_file_list(data_paths, save_dir, train_num):
         data_paths (tuple): contains (training_data_path, validation_data_path)
         save_dir (str): path to the dir where file lists will be saved
         train_num (int): training run number
+        logger (logging.Logger): logger object used to log messages
 
     Returns:
         None
@@ -210,6 +228,9 @@ def store_training_validation_file_list(data_paths, save_dir, train_num):
 
         get_images(validation_dir)
 
+    logger.info("File Generation: %s",
+               "Training and validation files list generated.")
+
 
 def get_iterator(generator,
                  data_dir,
@@ -247,3 +268,54 @@ def get_iterator(generator,
                                              shuffle=shuffle)
 
     return iterator
+
+
+# TODO: continue from here, write these two in full
+# TODO: write docs strings for there
+# TODO: add full model structure to cnn trained model save
+
+def save_mlp_trained_model(model, training_history, save_dir, train_num):
+    """Saved the weights of the trained model and the training history.
+
+    Args:
+        model (keras.engine.training.Model): model to be saved
+        training_history (keras.callbacks.History): training history of the
+        model
+        save_dir (str): address of dir to save the model in
+        train_num (int): training number for naming the save files
+
+    Returns:
+        None
+    """
+    model.save_weights(save_dir +
+                       '/{}_bottleneck_fc_model.h5'.format(train_num))
+    history_dict = training_history.history
+    save = save_dir + '/{}_bottleneck_history.json'.format(train_num)
+    json.dump(history_dict, open(save, 'w'))
+
+
+def save_cnn_trained_model(model, training_history, save_dir, train_num):
+    """Saved the weights of the trained model and the training history.
+
+    Args:
+        model (keras.engine.training.Model): model to be saved
+        training_history (keras.callbacks.History): training history of the
+        model
+        save_dir (str): address of dir to save the model in
+        train_num (int): training number for naming the save files
+
+    Returns:
+        None
+    """
+    # Save the model training history
+    history_dict = training_history.history
+    history_save = save_dir + '/{}_cnn_history.json'.format(train_num)
+    json.dump(history_dict, open(history_save, 'w'))
+    # Save the model weights
+    weights_save = save_dir + '/{}_cnn_weights.h5'.format(train_num)
+    model.save_weights(weights_save)
+    # Save the model structure to json file
+    model_save = save_dir + '/{}_cnn_model.json'.format(train_num)
+    model_json = model.to_json()
+    json.dump(model_json, open(model_save, 'w'))
+
