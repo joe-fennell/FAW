@@ -5,3 +5,6 @@ faw_container.simg
 Singularity*
 *.pyc
 *.swp
+*.h5
+/training/saves/*
+/FAW/model/*

@@ -13,14 +13,6 @@ which is the worm by computing size-independent shape factors.
 Also performs blur check on images to ensure they are above a predefined blur
 threshold.
 """
-
-# TODO: consider drawing box on live feed on phone and asking users to take a
-# picture with the caterpillar inside the specific box. Reject image if any
-# contours outside the box (would require uniform background).
-
-# TODO: look at report structure etc for something to give out on the project
-# on method, differenty design options considered etc.
-
 import math
 import pathlib
 import numpy as np
@@ -199,7 +191,7 @@ def check_and_crop(img_arg, dims=False):
     """Finds parent contours in an image, gets shape factors for those contours
     then crops the image to the area of interest containing the worm.
 
-    If image given is larger than 224 x 224 or equivalent, scales the image
+    If image given is larger than 224 x 224 (or supplied dims), scales the image
     down for preprocesing and then crops the original.
 
     Contour detection notes:
@@ -240,7 +232,12 @@ def check_and_crop(img_arg, dims=False):
     (h, w) = img.shape[:2]
     pixels = h * w
     scale_ratio = 1
-    if pixels > SCALED_IMAGE_PIXELS:  # 224 x 224 or similar dims size
+    if dims:
+        scaled_pixel_limit = dims[0] * dims[1]
+    else:
+        scaled_pixel_limit = SCALED_IMAGE_PIXELS
+
+    if pixels > scaled_pixel_limit:  # 224 x 224 or similar dims size
         # sqrt for dims scale ratio
         scale_ratio = math.sqrt(SCALED_IMAGE_PIXELS / pixels)
         img, h, w = _downscale_image(img, scale_ratio)

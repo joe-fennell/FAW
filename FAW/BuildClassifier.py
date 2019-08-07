@@ -46,41 +46,9 @@ IMG_W, IMG_H = 224, 224
 MLP_INPUT = (7, 7, 512)
 
 
-def _predict(data, model, number_segments=2000):
-    # returns label image
-    # segment the image
-    test_segments = slic(data,
-                         n_segments=number_segments,
-                         compactness=0.1,
-                         sigma=0,
-                         convert2lab=False)
-
-    # calculate seg stats
-    test_set = _calculate_segment_stats(data, test_segments)
-    # predict
-    test_set_segment_labels = model.predict(test_set)
-    # code via broadcasting
-    return test_set_segment_labels[test_segments]
-
-
-def _calculate_segment_stats(data, segments):
-    # turn the image into a 2D array (pix by channel)
-    d1_flat = pd.DataFrame(np.ravel(data).reshape((-1, 3)))
-    # add the label vector
-    d1_flat['spID'] = np.ravel(segments)
-    # calculate the mean by segment
-    return d1_flat.groupby('spID').mean().values
-
-
-def _preprocess(im):
-    # predict labels for data via K means with 3 clusters
-    im2 = np.array(im)
-    im_labels = _predict(np.float64(im2 / 255), KMEANS_3)
-    # imgarr = img_to_array(im, data_format=None)
-    im2[:, :, 0][im_labels == 0] = 0
-    im2[:, :, 1][im_labels == 0] = 0
-    im2[:, :, 2][im_labels == 0] = 0
-    return array_to_img(im / 255)
+# TODO: remove anything to do with training model. This script should become
+# purely a loading in of a saved model that has come from the training branch
+# of the program
 
 
 def get_iterator(generator,

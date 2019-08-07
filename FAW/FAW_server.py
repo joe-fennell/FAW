@@ -23,9 +23,7 @@ from FAW import FAW_classifier
 from FAW import ImageCheck as IC
 
 
-# TODO: document globals in docstring
 # TODO: add local database to store received images and metadata
-# TODO: Look into sendback of cropped image.
 
 
 HOST = 'localhost'

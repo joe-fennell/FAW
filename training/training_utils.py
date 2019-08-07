@@ -270,10 +270,6 @@ def get_iterator(generator,
     return iterator
 
 
-# TODO: continue from here, write these two in full
-# TODO: write docs strings for there
-# TODO: add full model structure to cnn trained model save
-
 def save_mlp_trained_model(model, training_history, save_dir, train_num):
     """Saved the weights of the trained model and the training history.
 

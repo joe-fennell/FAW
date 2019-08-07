@@ -22,8 +22,6 @@ from training_utils import (setup_training_run_folder, get_num_samples,
 from FAW import ImageCheck
 
 
-# TODO: change all prints to logs so that they enter the log file
-
 # Set TensorFlow config
 tf_config = tf.ConfigProto()
 tf_config.gpu_options.per_process_gpu_memory_fraction = 0.8
