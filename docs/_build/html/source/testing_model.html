@@ -1,0 +1,127 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Testing A Trained Model &#8212; FAW 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Setting Up A Server" href="setting_server.html" />
+    <link rel="prev" title="Training A Model" href="train_model.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="testing-a-trained-model">
+<h1>Testing A Trained Model<a class="headerlink" href="#testing-a-trained-model" title="Permalink to this headline">¶</a></h1>
+<p>Once a model has been trained, it can be deployed to the FAW classifier by copying the contents of a training run save directory (e.g. all the files in say <code class="docutils literal notranslate"><span class="pre">training/saves/0001/</span></code>) into the working model directory as specified in the <code class="docutils literal notranslate"><span class="pre">config.json</span></code> file.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+        <span class="o">...</span>
+        <span class="s2">&quot;working_model&quot;</span><span class="p">:</span> <span class="s2">&quot;/path/to/working/model/&quot;</span>
+        <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>It is recommended that by default you set this directory to be a folder separate from the <code class="docutils literal notranslate"><span class="pre">/path/to/training/saves</span></code> directory. I have used <code class="docutils literal notranslate"><span class="pre">/explicit/path/to/FAW/model/</span></code>.</p>
+<p><strong>NOTES:</strong></p>
+<ul class="simple">
+<li><p>Be sure to enter your file paths as absolute rather than relative file paths.</p></li>
+<li><p>Be sure to delete any existing files in the working model directory before copying a new model over or loading conflicts may occur.</p></li>
+</ul>
+<p>Once the model has been copied over, any calls to the <code class="docutils literal notranslate"><span class="pre">FAW</span></code> module will load the new model. The <code class="docutils literal notranslate"><span class="pre">FAW_classifier</span></code> class will always load the model it finds in the working directory. This is true for both the classifier in isolation and when it is run as part of a server / AWS setup.</p>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">FAW</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="modules.html">FAW</a></li>
+<li class="toctree-l1"><a class="reference internal" href="train_model.html">Training A Model</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Testing A Trained Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setting_server.html">Setting Up A Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deploy_to_aws.html">Deploying To AWS</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="train_model.html" title="previous chapter">Training A Model</a></li>
+      <li>Next: <a href="setting_server.html" title="next chapter">Setting Up A Server</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, G Worrall.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/source/testing_model.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

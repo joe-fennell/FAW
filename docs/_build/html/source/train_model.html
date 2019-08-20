@@ -1,0 +1,165 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Training A Model &#8212; FAW 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Testing A Trained Model" href="testing_model.html" />
+    <link rel="prev" title="FAW package" href="FAW.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="training-a-model">
+<h1>Training A Model<a class="headerlink" href="#training-a-model" title="Permalink to this headline">¶</a></h1>
+<p>Model training is done in the <code class="docutils literal notranslate"><span class="pre">training</span></code> section of the package via the <code class="docutils literal notranslate"><span class="pre">train_model.py</span></code> script.</p>
+<p>Training parameters are tuned by modifying the config.json file in the main directory of the package.</p>
+<p>This file will be structured like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span> <span class="s2">&quot;training_dir&quot;</span><span class="p">:</span> <span class="s2">&quot;/path/to/training/dir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;validation_dir&quot;</span><span class="p">:</span> <span class="s2">&quot;/path/to/validation/dir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;img_input_shape&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="mi">224</span><span class="p">,</span>
+        <span class="mi">224</span><span class="p">,</span>
+        <span class="mi">3</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;model_parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;mlp_dropout_rate&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="s2">&quot;mlp_optimizer_lr&quot;</span><span class="p">:</span> <span class="mf">0.00001</span><span class="p">,</span>
+        <span class="s2">&quot;mlp_num_training_epochs&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;cnn_num_trainable_layers&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;cnn_learning_rate&quot;</span><span class="p">:</span> <span class="mf">0.000001</span><span class="p">,</span>
+        <span class="s2">&quot;cnn_num_training_epochs&quot;</span><span class="p">:</span> <span class="mi">1</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;working_model&quot;</span><span class="p">:</span> <span class="s2">&quot;/path/to/working/model/for/deployment/&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;classification_threshold&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="s2">&quot;server_settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;host_address&quot;</span><span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="mi">7777</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>NOTE:</strong> Be sure to enter your file paths as absolute rather than relative file paths.</p>
+<p>The training script will use the two parameters <code class="docutils literal notranslate"><span class="pre">training_dir</span></code> and <code class="docutils literal notranslate"><span class="pre">validation_dir</span></code> to locate the images used for training. Remember to seperate the images in to seperate folders named after their respective classes i.e. <code class="docutils literal notranslate"><span class="pre">faw</span></code> and <code class="docutils literal notranslate"><span class="pre">notfaw</span></code> in this instance.</p>
+<p>The field <code class="docutils literal notranslate"><span class="pre">model_parameters</span></code> is there to hold the model parameters for a given training run. This is what should be modified to vary the number of trainable layers, the learning rate, and the number of epochs etc.</p>
+<p><strong>NOTE:</strong> The model in use is based on ResNet50 from the Keras library.</p>
+<p>Upon starting the training script, you will be asked to enter a training reference number. This number will be added to all output files to keep them unique. The generated output files can be found in the <code class="docutils literal notranslate"><span class="pre">training/saves/</span></code> directory once training is complete. A typical file list will look like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="mf">0001.</span><span class="n">log</span>
+<span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="mi">0001</span><span class="n">_bottleneck_fc_model</span><span class="o">.</span><span class="n">h5</span>
+<span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="mi">0001</span><span class="n">_bottleneck_history</span><span class="o">.</span><span class="n">json</span>
+<span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="mi">0001</span><span class="n">_cnn_history</span><span class="o">.</span><span class="n">json</span>
+<span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="mi">0001</span><span class="n">_cnn_model</span><span class="o">.</span><span class="n">json</span>
+<span class="p">(</span><span class="mi">6</span><span class="p">)</span> <span class="mi">0001</span><span class="n">_cnn_weights</span><span class="o">.</span><span class="n">h5</span>
+<span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="mi">0001</span><span class="n">_config</span><span class="o">.</span><span class="n">json</span>
+<span class="p">(</span><span class="mi">8</span><span class="p">)</span> <span class="mi">0001</span><span class="n">_train_valid_file_list</span><span class="o">.</span><span class="n">txt</span>
+</pre></div>
+</div>
+<ol class="arabic simple">
+<li><p>The log file containing the console output for the training cycle.</p></li>
+<li><p>The saved weights of the fully connected cap that is pre-trained before it is combined with the ResNet50 base.</p></li>
+<li><p>The training and validation history from the training of the FC cap.</p></li>
+<li><p>The training and validation history of the combined CNN model.</p></li>
+<li><p>The saved structure of the combined CNN model.</p></li>
+<li><p>The saved weights of the combined CNN model.</p></li>
+<li><p>A copy of the config.json file in the main directory as it stood when the training run was started.</p></li>
+<li><p>A list of the files used in training and validation for the training run.</p></li>
+</ol>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">FAW</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="modules.html">FAW</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Training A Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing_model.html">Testing A Trained Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setting_server.html">Setting Up A Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deploy_to_aws.html">Deploying To AWS</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="FAW.html" title="previous chapter">FAW package</a></li>
+      <li>Next: <a href="testing_model.html" title="next chapter">Testing A Trained Model</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, G Worrall.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/source/train_model.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

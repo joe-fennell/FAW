@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Setting Up A Server &#8212; FAW 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Deploying To AWS" href="deploy_to_aws.html" />
+    <link rel="prev" title="Testing A Trained Model" href="testing_model.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="setting-up-a-server">
+<h1>Setting Up A Server<a class="headerlink" href="#setting-up-a-server" title="Permalink to this headline">¶</a></h1>
+<p>Setting up a server involves running the <code class="docutils literal notranslate"><span class="pre">FAW_server.py</span></code> script.</p>
+<p>This script takes its address and port settings from the below lines in the <code class="docutils literal notranslate"><span class="pre">config.json</span></code> file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+        <span class="o">...</span>
+        <span class="s2">&quot;server_settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;host_address&quot;</span><span class="p">:</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">,</span>
+                <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="mi">7777</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>These can be set to anything the user requires.</p>
+<p>To start the server with debugging message printing to the console, use the flag <code class="docutils literal notranslate"><span class="pre">-d</span></code> or <code class="docutils literal notranslate"><span class="pre">--debug</span></code></p>
+<p>as in:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span><span class="n">python3</span> <span class="n">FAW_server</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span>
+</pre></div>
+</div>
+<p>After the usual Tensorflow start up jargon, you will see the following messages if you are running in debug mode and the server has started properly:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">I0820</span> <span class="mi">14</span><span class="p">:</span><span class="mi">17</span><span class="p">:</span><span class="mf">39.209626</span> <span class="mi">140279839246144</span> <span class="n">FAW_server</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">82</span><span class="p">]</span> <span class="n">Classifier</span> <span class="n">loaded</span><span class="o">.</span>
+<span class="n">I0820</span> <span class="mi">14</span><span class="p">:</span><span class="mi">17</span><span class="p">:</span><span class="mf">39.210142</span> <span class="mi">140276353455872</span> <span class="n">FAW_server</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">93</span><span class="p">]</span> <span class="n">Server</span> <span class="n">started</span> <span class="ow">and</span> <span class="n">listening</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>In debug mode, the server will post to console when it receives a message from a client program and when it responds. See the <code class="docutils literal notranslate"><span class="pre">FAW_server.py</span></code> and <code class="docutils literal notranslate"><span class="pre">FAW_client.py</span></code> docs for message formatting information.</p>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">FAW</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="modules.html">FAW</a></li>
+<li class="toctree-l1"><a class="reference internal" href="train_model.html">Training A Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing_model.html">Testing A Trained Model</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Setting Up A Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deploy_to_aws.html">Deploying To AWS</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="testing_model.html" title="previous chapter">Testing A Trained Model</a></li>
+      <li>Next: <a href="deploy_to_aws.html" title="next chapter">Deploying To AWS</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, G Worrall.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/source/setting_server.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

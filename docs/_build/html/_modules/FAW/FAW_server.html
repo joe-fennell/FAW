@@ -1,0 +1,407 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>FAW.FAW_server &#8212; FAW 0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for FAW.FAW_server</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Fall Armyworm Project - University of Manchester</span>
+<span class="sd">Author: George Worrall</span>
+
+<span class="sd">FAW_server.py</span>
+
+<span class="sd">Script to coordinate remote server image reception and classification.</span>
+
+<span class="sd">Speaks to a client and returns classification result via sockets.</span>
+
+<span class="sd">NOTE: Multi-threaded server based on stackoverflow.com/questions/23828264/</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">queue</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">from</span> <span class="nn">FAW</span> <span class="k">import</span> <span class="n">FAW_classifier</span>
+<span class="kn">from</span> <span class="nn">FAW</span> <span class="k">import</span> <span class="n">ImageCheck</span> <span class="k">as</span> <span class="n">IC</span>
+<span class="kn">from</span> <span class="nn">FAW</span> <span class="k">import</span> <span class="n">ClassifierTools</span> <span class="k">as</span> <span class="n">CT</span>
+
+<span class="c1"># TODO: add local database to store received images and metadata</span>
+
+<div class="viewcode-block" id="FAWThreadedServer"><a class="viewcode-back" href="../../source/FAW.html#FAW.FAW_server.FAWThreadedServer">[docs]</a><span class="k">class</span> <span class="nc">FAWThreadedServer</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Threaded server to handle multiple client connections.</span>
+
+<span class="sd">    NOTE: Uses Queues to schedule classification rather than running</span>
+<span class="sd">          classification within individual threads because the</span>
+<span class="sd">          classification_models module does not work if models are not loaded</span>
+<span class="sd">          and run in the main thread.</span>
+
+<span class="sd">    Example: Example message from client:</span>
+<span class="sd">        STRTGPSC51.5138LONG-0.09847899999999754SOF{image byte string data}ENDM</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        host (str): Host address.</span>
+<span class="sd">        port (int): Port to watch.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        host (str): Host address.</span>
+<span class="sd">        port (int): Port to watch.</span>
+<span class="sd">        sock (socket.socket): Server socket listening for client connections.</span>
+<span class="sd">        classifier (FAW_classifier.FAW_classifier): Fall Armyworm Classifier.</span>
+<span class="sd">        classification_queue (queue.Queue): Queues the image to be classified.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">CT</span><span class="o">.</span><span class="n">load_config</span><span class="p">()</span>
+
+    <span class="n">HOST</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;server_settings&#39;</span><span class="p">][</span><span class="s1">&#39;host_address&#39;</span><span class="p">]</span>
+    <span class="n">PORT</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;server_settings&#39;</span><span class="p">][</span><span class="s1">&#39;port&#39;</span><span class="p">]</span>
+    <span class="c1"># Client to Server communication codes</span>
+    <span class="n">START</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;STRT&#39;</span>  <span class="c1"># Beginning of message</span>
+    <span class="n">GPS</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;GPSC&#39;</span>  <span class="c1"># GPS delimiter (coords in form Lat, Long (decimal degrees)</span>
+    <span class="n">LONG</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;LONG&#39;</span>  <span class="c1"># Longitude delimiter</span>
+    <span class="n">SOF</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;SOFT&#39;</span>  <span class="c1"># Start of image file</span>
+    <span class="n">END_MESSAGE</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;ENDM&#39;</span>
+    <span class="c1"># Server to Client communication codes</span>
+    <span class="n">DWLD_FAIL</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;FAIL&#39;</span>
+    <span class="n">DWLD_SUCC</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;SUCC&#39;</span>
+    <span class="n">INVALID</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;IVLD&#39;</span>
+    <span class="n">TRUE</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;TRUE&#39;</span>  <span class="c1"># &lt;-- Classification True, as in Fall Armyworm identified.</span>
+    <span class="n">FALSE</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;FALS&#39;</span>
+    <span class="n">OBJECT_MISSING</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;MISS&#39;</span>
+    <span class="n">WORM_MISSING</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;NONE&#39;</span>
+    <span class="n">MULTIPLE_WORMS</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;MANY&#39;</span>
+    <span class="n">TOO_BLURRY</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;BLUR&#39;</span>
+
+    <span class="c1"># Threshold above which CNN output is classified as positive result</span>
+    <span class="n">CLASSIFICATION_THRESHOLD</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;classification_threshold&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="n">HOST</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">PORT</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sock</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">setsockopt</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SO_REUSEADDR</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">bind</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">FAW_classifier</span><span class="o">.</span><span class="n">FAW_classifier</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classification_queue</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Classifier loaded.&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FAWThreadedServer.start"><a class="viewcode-back" href="../../source/FAW.html#FAW.FAW_server.FAWThreadedServer.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Start the server. Spawns thread to listen and starts classificatoin</span>
+<span class="sd">        Queue loop in main thread.&quot;&quot;&quot;</span>
+        <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">listen</span><span class="p">,</span> <span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">monitor_loop</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="FAWThreadedServer.listen"><a class="viewcode-back" href="../../source/FAW.html#FAW.FAW_server.FAWThreadedServer.listen">[docs]</a>    <span class="k">def</span> <span class="nf">listen</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Listen for client connections and start thread on connection.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Server started and listening.&quot;</span><span class="p">)</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">client</span><span class="p">,</span> <span class="n">address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">settimeout</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+            <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_client</span><span class="p">,</span>
+                             <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">address</span><span class="p">),</span> <span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="FAWThreadedServer.monitor_loop"><a class="viewcode-back" href="../../source/FAW.html#FAW.FAW_server.FAWThreadedServer.monitor_loop">[docs]</a>    <span class="k">def</span> <span class="nf">monitor_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Monitors self.classification_queue for new images from client</span>
+<span class="sd">        handling threads that need classification. Classifies new images and</span>
+<span class="sd">        sends the result to the client before closing the connection.&quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="c1"># Get the next image from queue. Will block until one is added.</span>
+            <span class="n">client</span><span class="p">,</span> <span class="n">client_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classification_queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+            <span class="c1"># process and classify the image then return the result to client</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_image</span><span class="p">(</span><span class="n">client_data</span><span class="p">[</span><span class="s1">&#39;img&#39;</span><span class="p">])</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Conn </span><span class="si">{}</span><span class="s2">: Image processing result: &quot;</span>
+                          <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">client_data</span><span class="p">[</span><span class="s1">&#39;client_address&#39;</span><span class="p">],</span>
+                                      <span class="n">result</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">result</span> <span class="o">==</span> <span class="n">TRUE</span><span class="p">:</span>
+                <span class="n">client_data</span><span class="p">[</span><span class="s1">&#39;FAW_classification&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">result</span> <span class="o">==</span> <span class="n">FALSE</span><span class="p">:</span>
+                <span class="n">client_data</span><span class="p">[</span><span class="s1">&#39;FAW_classification&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Send the result back to the client</span>
+                <span class="n">client</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Conn </span><span class="si">{}</span><span class="s2">: Result sent to client: &quot;</span>
+                              <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">client_data</span><span class="p">[</span><span class="s1">&#39;client_address&#39;</span><span class="p">],</span>
+                                          <span class="n">result</span><span class="p">))</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Conn </span><span class="si">{}</span><span class="s2">: Closing connection to client&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                              <span class="n">client_data</span><span class="p">[</span><span class="s1">&#39;client_address&#39;</span><span class="p">]))</span>
+
+                <span class="c1"># Close the connection</span>
+                <span class="n">client</span><span class="o">.</span><span class="n">shutdown</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">SHUT_RDWR</span><span class="p">)</span>
+                <span class="n">client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+            <span class="c1"># TODO: add client data store method to store image and data in a</span>
+            <span class="c1"># local database</span>
+
+            <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Conn </span><span class="si">{}</span><span class="s2">: Socket error in monitor_loop: </span><span class="si">{}</span><span class="s2">&quot;</span>
+                              <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">client_data</span><span class="p">[</span><span class="s1">&#39;client_address&#39;</span><span class="p">],</span> <span class="n">e</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="FAWThreadedServer.handle_client"><a class="viewcode-back" href="../../source/FAW.html#FAW.FAW_server.FAWThreadedServer.handle_client">[docs]</a>    <span class="k">def</span> <span class="nf">handle_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Interact with the client, check data and return results code.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            client (socket.sockect): Socket that connects to the client.</span>
+<span class="sd">            address: The address bound to the socket on the other end of the</span>
+<span class="sd">            connection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="mi">4096</span>  <span class="c1"># byte size chunk to receive each pass</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Conn </span><span class="si">{}</span><span class="s2">: Connected to client.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">address</span><span class="p">))</span>
+
+        <span class="k">def</span> <span class="nf">respond_and_shutdown</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Send a response to the client and close the conneciton.&quot;&quot;&quot;</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">shutdown</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">SHUT_RDWR</span><span class="p">)</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Conn </span><span class="si">{}</span><span class="s2">: Download failed. Sent code: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                          <span class="n">address</span><span class="p">,</span>
+                          <span class="n">response</span><span class="p">))</span>
+            <span class="k">return</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">first_signal</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>  <span class="c1"># Get first four bytes</span>
+
+            <span class="k">if</span> <span class="n">first_signal</span> <span class="o">!=</span> <span class="n">START</span><span class="p">:</span>  <span class="c1"># If starting delimiter not found</span>
+                <span class="n">respond_and_shutdown</span><span class="p">(</span><span class="n">DWLD_FAIL</span><span class="p">)</span>
+                <span class="k">return</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Conn </span><span class="si">{}</span><span class="s2">: START_MESSAGE signal received.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">address</span><span class="p">))</span>
+
+            <span class="n">message</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">:]</span> <span class="o">==</span> <span class="n">END_MESSAGE</span><span class="p">:</span>  <span class="c1"># Delimiter for transfer end</span>
+                    <span class="n">message</span> <span class="o">=</span> <span class="n">message</span> <span class="o">+</span> <span class="n">data</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Conn </span><span class="si">{}</span><span class="s2">: END_MESSAGE signal received.&quot;</span>
+                                  <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">address</span><span class="p">))</span>
+                    <span class="k">break</span>
+
+                <span class="k">if</span> <span class="n">data</span> <span class="o">==</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span><span class="p">:</span>  <span class="c1"># File transfer connection broke off</span>
+                    <span class="n">respond_and_shutdown</span><span class="p">(</span><span class="n">DWLD_FAIL</span><span class="p">)</span>
+
+                <span class="n">message</span> <span class="o">=</span> <span class="n">message</span> <span class="o">+</span> <span class="n">data</span>
+
+            <span class="c1">#  after END_MESSAGE stop further receives from the client</span>
+            <span class="c1"># to prevent double send</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">shutdown</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">SHUT_RD</span><span class="p">)</span>
+
+            <span class="c1"># decode the message and extract the data</span>
+            <span class="n">is_valid</span><span class="p">,</span> <span class="n">client_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decode_message</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">is_valid</span><span class="p">:</span>
+                <span class="n">respond_and_shutdown</span><span class="p">(</span><span class="n">DWLD_FAIL</span><span class="p">)</span>
+                <span class="k">return</span>
+
+            <span class="n">client</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">DWLD_SUCC</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Conn </span><span class="si">{}</span><span class="s2">: Download successful. Sent code: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                          <span class="n">address</span><span class="p">,</span>
+                          <span class="n">DWLD_SUCC</span><span class="p">))</span>
+
+            <span class="c1"># queue the image for classification in the main thread</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">classification_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">client</span><span class="p">,</span> <span class="n">client_data</span><span class="p">))</span>
+
+        <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Conn </span><span class="si">{}</span><span class="s2">: Socket error in handle_client: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">address</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="FAWThreadedServer.decode_message"><a class="viewcode-back" href="../../source/FAW.html#FAW.FAW_server.FAWThreadedServer.decode_message">[docs]</a>    <span class="k">def</span> <span class="nf">decode_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Decode the message receieve from the client and sort data into dict.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            client (socket.socket): client connected socket</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: containing client image and metadata.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">client_data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;received_datetime&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()),</span>
+                       <span class="s1">&#39;client_address&#39;</span><span class="p">:</span> <span class="n">address</span><span class="p">,</span>
+                       <span class="s1">&#39;gps&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                       <span class="s1">&#39;img&#39;</span><span class="p">:</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;FAW_classification&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">SOF</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="p">[</span><span class="n">gps</span><span class="p">,</span> <span class="n">img_data</span><span class="p">]</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">SOF</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">gps</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span> <span class="o">!=</span> <span class="n">GPS</span> <span class="ow">or</span> <span class="n">LONG</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">gps</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="n">gps</span><span class="p">[</span><span class="mi">4</span><span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">LONG</span><span class="p">)</span>
+        <span class="n">client_data</span><span class="p">[</span><span class="s1">&#39;gps&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lat</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">lon</span><span class="p">))</span>
+        <span class="n">client_data</span><span class="p">[</span><span class="s1">&#39;img&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">img_data</span>
+
+        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">client_data</span></div>
+
+<div class="viewcode-block" id="FAWThreadedServer.process_image"><a class="viewcode-back" href="../../source/FAW.html#FAW.FAW_server.FAWThreadedServer.process_image">[docs]</a>    <span class="k">def</span> <span class="nf">process_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                      <span class="n">image</span><span class="p">,</span>
+                      <span class="n">classification__threshold</span><span class="o">=</span><span class="n">CLASSIFICATION_THRESHOLD</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Processes the passed image and returns the result to be sent to the</span>
+<span class="sd">        client.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            image_stream (io.BytesIO): Byte stream sent from client.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: four letter result code to be sent back to the client.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">valid</span><span class="p">,</span> <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate_and_load_image</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">valid</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">INVALID</span>
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">image</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">classification__threshold</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">TRUE</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">FALSE</span>
+        <span class="k">except</span> <span class="n">IC</span><span class="o">.</span><span class="n">ObjectMissingError</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">OBJECT_MISSING</span>
+        <span class="k">except</span> <span class="n">IC</span><span class="o">.</span><span class="n">WormMissingError</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">WORM_MISSING</span>
+        <span class="k">except</span> <span class="n">IC</span><span class="o">.</span><span class="n">MultipleWormsError</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">MULTIPLE_WORMS</span>
+        <span class="k">except</span> <span class="n">IC</span><span class="o">.</span><span class="n">TooBlurryError</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">TOO_BLURRY</span>
+
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="FAWThreadedServer.validate_and_load_image"><a class="viewcode-back" href="../../source/FAW.html#FAW.FAW_server.FAWThreadedServer.validate_and_load_image">[docs]</a>    <span class="k">def</span> <span class="nf">validate_and_load_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_bytes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load the image from bytes and check it is valid.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            image_bytes (bytes): byte string of image sent from client.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if valid image, otherwise False.</span>
+<span class="sd">            img (np.np_array): Loaded image if valid, otherwise None.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">nparr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">image_bytes</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imdecode</span><span class="p">(</span><span class="n">nparr</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">IMREAD_COLOR</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">img</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">img</span></div></div>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="c1"># Set debugging options</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-d&#39;</span><span class="p">,</span> <span class="s2">&quot;--debug&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;enable debugging&quot;</span><span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+    <span class="n">server</span> <span class="o">=</span> <span class="n">FAWThreadedServer</span><span class="p">()</span>
+    <span class="n">server</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">FAW</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../source/modules.html">FAW</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/initial_setup.html">Initial Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/train_model.html">Training A Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/testing_model.html">Testing A Trained Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/setting_server.html">Setting Up A Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/deploy_to_aws.html">Deploying To AWS</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, G Worrall.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

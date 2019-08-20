@@ -56,8 +56,8 @@ class FAW_classifier:
             A cropped image containing the worm.
         Raises:
             ImageCheckError: Raised from `imagecheck/ImageCheck.py`
-            if the image does not meet the required standards or no
-            worm is found.
+                if the image does not meet the required standards or no
+                worm is found.
         """
         image = self._load_image(image)
         return ImageCheck.check_and_crop(image, dims)

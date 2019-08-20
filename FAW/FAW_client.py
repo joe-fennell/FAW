@@ -6,7 +6,6 @@ FAW_client.py
 
 Client script to interact with FAW_server.py
 """
-
 import socket
 import pathlib
 
@@ -35,7 +34,7 @@ def send_image_to_server(filepath, coords):
 
     Args:
         filepath (str): path to the image file to be sent.
-        coords (tuple): tuple of coords in (lattitude, longitude)
+        coords (tuple, optional): tuple of coords in (lattitude, longitude)
 
     Returns:
         valid (bool): True if image was valid

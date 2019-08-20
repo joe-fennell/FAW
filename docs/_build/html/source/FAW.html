@@ -1,0 +1,602 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>FAW package &#8212; FAW 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Training A Model" href="train_model.html" />
+    <link rel="prev" title="FAW" href="modules.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="faw-package">
+<h1>FAW package<a class="headerlink" href="#faw-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-FAW.ClassifierTools">
+<span id="faw-classifiertools-module"></span><h2>FAW.ClassifierTools module<a class="headerlink" href="#module-FAW.ClassifierTools" title="Permalink to this headline">¶</a></h2>
+<p>Fall Armyworm Project - University of Manchester
+Author: George Worrall</p>
+<p>ClassifierTools.py</p>
+<p>Utility script for the Fall Armyworm Classifier.</p>
+<dl class="function">
+<dt id="FAW.ClassifierTools.load_classifier">
+<code class="sig-prename descclassname">FAW.ClassifierTools.</code><code class="sig-name descname">load_classifier</code><span class="sig-paren">(</span><em class="sig-param">model_dir</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/FAW/ClassifierTools.html#load_classifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.ClassifierTools.load_classifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make classifier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>model_dir</strong> (<em>str</em>) – path to where the model is stored.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Loaded in Keras model from model dir.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>keras.engine.training.Model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="FAW.ClassifierTools.load_config">
+<code class="sig-prename descclassname">FAW.ClassifierTools.</code><code class="sig-name descname">load_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/FAW/ClassifierTools.html#load_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.ClassifierTools.load_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the config.json file into memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Contains all config settings.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-FAW.FAW_classifier">
+<span id="faw-faw-classifier-module"></span><h2>FAW.FAW_classifier module<a class="headerlink" href="#module-FAW.FAW_classifier" title="Permalink to this headline">¶</a></h2>
+<p>Fall Armyworm Project - University of Manchester
+Author: George Worrall</p>
+<p>FAW_detector.py</p>
+<p>Script to identify Fall Armyworm from a given image..</p>
+<p>Outputs true or false for Fall Armyworm detected.</p>
+<p>Will generate and train the ResNet18 based classifier if it is not present.</p>
+<dl class="class">
+<dt id="FAW.FAW_classifier.FAW_classifier">
+<em class="property">class </em><code class="sig-prename descclassname">FAW.FAW_classifier.</code><code class="sig-name descname">FAW_classifier</code><a class="reference internal" href="../_modules/FAW/FAW_classifier.html#FAW_classifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.FAW_classifier.FAW_classifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Classifer that loads CNN and crops and classifies fed images.</p>
+<dl class="method">
+<dt id="FAW.FAW_classifier.FAW_classifier.load_classifier">
+<code class="sig-name descname">load_classifier</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/FAW/FAW_classifier.html#FAW_classifier.load_classifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.FAW_classifier.FAW_classifier.load_classifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads classifier via saved weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The loaded fully connected and trained model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="FAW.FAW_classifier.FAW_classifier.predict">
+<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param">image</em>, <em class="sig-param">preprocessed=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/FAW/FAW_classifier.html#FAW_classifier.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.FAW_classifier.FAW_classifier.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predict whether an image contains a Fall Armyworm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>str or numpy.ndarray</em>) – Path to the image containing object
+to be classified.</p></li>
+<li><p><strong>preprocessed</strong> (<em>bool</em>) – If True, no processing will be applied to the
+image as supplied image is expected to have already been
+processed to meet the format requirements..</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if Fall Armyworm detected, else False.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="FAW.FAW_classifier.FAW_classifier.process_image">
+<code class="sig-name descname">process_image</code><span class="sig-paren">(</span><em class="sig-param">image</em>, <em class="sig-param">dims=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/FAW/FAW_classifier.html#FAW_classifier.process_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.FAW_classifier.FAW_classifier.process_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Processes an image using imagecheck.check_and_crop function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>image</strong> (<em>str or numpy.ndarray</em>) – Path to the image to be process.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A cropped image containing the worm.</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ImageCheckError</strong> – Raised from <cite>imagecheck/ImageCheck.py</cite>
+    if the image does not meet the required standards or no
+    worm is found.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="FAW.FAW_classifier.detect_fallarmyworm">
+<code class="sig-prename descclassname">FAW.FAW_classifier.</code><code class="sig-name descname">detect_fallarmyworm</code><span class="sig-paren">(</span><em class="sig-param">image</em>, <em class="sig-param">threshold=0.5</em>, <em class="sig-param">preprocessed=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/FAW/FAW_classifier.html#detect_fallarmyworm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.FAW_classifier.detect_fallarmyworm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predicts whether an iamge contains a Fall Armyworm or not. This is a
+standalone function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image_path</strong> (<em>str</em>) – path to the image</p></li>
+<li><p><strong>threshold</strong> (<em>double</em>) – Threhold above which the ResNet positive</p></li>
+<li><p><strong>probability is classed as a positive classifiation. Default = 0.5</strong></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True is contains Fall Armyworm, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="FAW.FAW_classifier.load_classifier_config">
+<code class="sig-prename descclassname">FAW.FAW_classifier.</code><code class="sig-name descname">load_classifier_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/FAW/FAW_classifier.html#load_classifier_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.FAW_classifier.load_classifier_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load in configuration from the config file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>containing the saved model dir and the image input shape.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-FAW.FAW_client">
+<span id="faw-faw-client-module"></span><h2>FAW.FAW_client module<a class="headerlink" href="#module-FAW.FAW_client" title="Permalink to this headline">¶</a></h2>
+<p>Fall Armyworm Project - University of Manchester
+Author: George Worrall</p>
+<p>FAW_client.py</p>
+<p>Client script to interact with FAW_server.py</p>
+<dl class="function">
+<dt id="FAW.FAW_client.send_image_to_server">
+<code class="sig-prename descclassname">FAW.FAW_client.</code><code class="sig-name descname">send_image_to_server</code><span class="sig-paren">(</span><em class="sig-param">filepath</em>, <em class="sig-param">coords</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/FAW/FAW_client.html#send_image_to_server"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.FAW_client.send_image_to_server" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send an image to FAW_server.py for classification.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filepath</strong> (<em>str</em>) – path to the image file to be sent.</p></li>
+<li><p><strong>coords</strong> (<em>tuple, optional</em>) – tuple of coords in (lattitude, longitude)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>True if image was valid
+result (bool or None): bool if valid image otherwise none. Bool is</p>
+<blockquote>
+<div><p>classification result.</p>
+</div></blockquote>
+<p>error (str or None): Str if error message, otherwise None.</p>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>valid (bool)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-FAW.FAW_server">
+<span id="faw-faw-server-module"></span><h2>FAW.FAW_server module<a class="headerlink" href="#module-FAW.FAW_server" title="Permalink to this headline">¶</a></h2>
+<p>Fall Armyworm Project - University of Manchester
+Author: George Worrall</p>
+<p>FAW_server.py</p>
+<p>Script to coordinate remote server image reception and classification.</p>
+<p>Speaks to a client and returns classification result via sockets.</p>
+<p>NOTE: Multi-threaded server based on stackoverflow.com/questions/23828264/</p>
+<dl class="class">
+<dt id="FAW.FAW_server.FAWThreadedServer">
+<em class="property">class </em><code class="sig-prename descclassname">FAW.FAW_server.</code><code class="sig-name descname">FAWThreadedServer</code><span class="sig-paren">(</span><em class="sig-param">host='localhost'</em>, <em class="sig-param">port=7777</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/FAW/FAW_server.html#FAWThreadedServer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Threaded server to handle multiple client connections.</p>
+<dl class="simple">
+<dt>NOTE: Uses Queues to schedule classification rather than running</dt><dd><p>classification within individual threads because the
+classification_models module does not work if models are not loaded
+and run in the main thread.</p>
+</dd>
+<dt>Example: Example message from client:</dt><dd><p>STRTGPSC51.5138LONG-0.09847899999999754SOF{image byte string data}ENDM</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>host</strong> (<em>str</em>) – Host address.</p></li>
+<li><p><strong>port</strong> (<em>int</em>) – Port to watch.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Variables</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>host</strong> (<em>str</em>) – Host address.</p></li>
+<li><p><strong>port</strong> (<em>int</em>) – Port to watch.</p></li>
+<li><p><strong>sock</strong> (<em>socket.socket</em>) – Server socket listening for client connections.</p></li>
+<li><p><strong>classifier</strong> (<a class="reference internal" href="#FAW.FAW_classifier.FAW_classifier" title="FAW.FAW_classifier.FAW_classifier"><em>FAW_classifier.FAW_classifier</em></a>) – Fall Armyworm Classifier.</p></li>
+<li><p><strong>classification_queue</strong> (<em>queue.Queue</em>) – Queues the image to be classified.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="FAW.FAW_server.FAWThreadedServer.CLASSIFICATION_THRESHOLD">
+<code class="sig-name descname">CLASSIFICATION_THRESHOLD</code><em class="property"> = 0.5</em><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.CLASSIFICATION_THRESHOLD" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="FAW.FAW_server.FAWThreadedServer.DWLD_FAIL">
+<code class="sig-name descname">DWLD_FAIL</code><em class="property"> = b'FAIL'</em><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.DWLD_FAIL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="FAW.FAW_server.FAWThreadedServer.DWLD_SUCC">
+<code class="sig-name descname">DWLD_SUCC</code><em class="property"> = b'SUCC'</em><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.DWLD_SUCC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="FAW.FAW_server.FAWThreadedServer.END_MESSAGE">
+<code class="sig-name descname">END_MESSAGE</code><em class="property"> = b'ENDM'</em><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.END_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="FAW.FAW_server.FAWThreadedServer.FALSE">
+<code class="sig-name descname">FALSE</code><em class="property"> = b'FALS'</em><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.FALSE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="FAW.FAW_server.FAWThreadedServer.GPS">
+<code class="sig-name descname">GPS</code><em class="property"> = b'GPSC'</em><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.GPS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="FAW.FAW_server.FAWThreadedServer.HOST">
+<code class="sig-name descname">HOST</code><em class="property"> = 'localhost'</em><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.HOST" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="FAW.FAW_server.FAWThreadedServer.INVALID">
+<code class="sig-name descname">INVALID</code><em class="property"> = b'IVLD'</em><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.INVALID" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="FAW.FAW_server.FAWThreadedServer.LONG">
+<code class="sig-name descname">LONG</code><em class="property"> = b'LONG'</em><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.LONG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="FAW.FAW_server.FAWThreadedServer.MULTIPLE_WORMS">
+<code class="sig-name descname">MULTIPLE_WORMS</code><em class="property"> = b'MANY'</em><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.MULTIPLE_WORMS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="FAW.FAW_server.FAWThreadedServer.OBJECT_MISSING">
+<code class="sig-name descname">OBJECT_MISSING</code><em class="property"> = b'MISS'</em><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.OBJECT_MISSING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="FAW.FAW_server.FAWThreadedServer.PORT">
+<code class="sig-name descname">PORT</code><em class="property"> = 7777</em><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.PORT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="FAW.FAW_server.FAWThreadedServer.SOF">
+<code class="sig-name descname">SOF</code><em class="property"> = b'SOFT'</em><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.SOF" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="FAW.FAW_server.FAWThreadedServer.START">
+<code class="sig-name descname">START</code><em class="property"> = b'STRT'</em><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.START" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="FAW.FAW_server.FAWThreadedServer.TOO_BLURRY">
+<code class="sig-name descname">TOO_BLURRY</code><em class="property"> = b'BLUR'</em><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.TOO_BLURRY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="FAW.FAW_server.FAWThreadedServer.TRUE">
+<code class="sig-name descname">TRUE</code><em class="property"> = b'TRUE'</em><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.TRUE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="FAW.FAW_server.FAWThreadedServer.WORM_MISSING">
+<code class="sig-name descname">WORM_MISSING</code><em class="property"> = b'NONE'</em><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.WORM_MISSING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="FAW.FAW_server.FAWThreadedServer.config">
+<code class="sig-name descname">config</code><em class="property"> = {'batch_size': 1, 'classification_threshold': 0.5, 'img_input_shape': [224, 224, 3], 'model_parameters': {'cnn_learning_rate': 1e-06, 'cnn_num_trainable_layers': 1, 'cnn_num_training_epochs': 1, 'mlp_dropout_rate': 0.5, 'mlp_num_training_epochs': 1, 'mlp_optimizer_lr': 1e-05}, 'server_settings': {'host_address': 'localhost', 'port': 7777}, 'training_dir': '/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/train', 'validation_dir': '/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/validation', 'working_model': '/home/gworrall/Documents/side_tasks/faw_manc/FAW/FAW/model/'}</em><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="FAW.FAW_server.FAWThreadedServer.decode_message">
+<code class="sig-name descname">decode_message</code><span class="sig-paren">(</span><em class="sig-param">message</em>, <em class="sig-param">address</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/FAW/FAW_server.html#FAWThreadedServer.decode_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.decode_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decode the message receieve from the client and sort data into dict.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>client</strong> (<em>socket.socket</em>) – client connected socket</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>containing client image and metadata.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="FAW.FAW_server.FAWThreadedServer.handle_client">
+<code class="sig-name descname">handle_client</code><span class="sig-paren">(</span><em class="sig-param">client</em>, <em class="sig-param">address</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/FAW/FAW_server.html#FAWThreadedServer.handle_client"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.handle_client" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interact with the client, check data and return results code.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>client</strong> (<em>socket.sockect</em>) – Socket that connects to the client.</p></li>
+<li><p><strong>address</strong> – The address bound to the socket on the other end of the</p></li>
+<li><p><strong>connection.</strong></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="FAW.FAW_server.FAWThreadedServer.listen">
+<code class="sig-name descname">listen</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/FAW/FAW_server.html#FAWThreadedServer.listen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.listen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Listen for client connections and start thread on connection.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="FAW.FAW_server.FAWThreadedServer.monitor_loop">
+<code class="sig-name descname">monitor_loop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/FAW/FAW_server.html#FAWThreadedServer.monitor_loop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.monitor_loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Monitors self.classification_queue for new images from client
+handling threads that need classification. Classifies new images and
+sends the result to the client before closing the connection.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="FAW.FAW_server.FAWThreadedServer.process_image">
+<code class="sig-name descname">process_image</code><span class="sig-paren">(</span><em class="sig-param">image</em>, <em class="sig-param">classification__threshold=0.5</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/FAW/FAW_server.html#FAWThreadedServer.process_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.process_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Processes the passed image and returns the result to be sent to the
+client.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>image_stream</strong> (<em>io.BytesIO</em>) – Byte stream sent from client.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>four letter result code to be sent back to the client.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="FAW.FAW_server.FAWThreadedServer.start">
+<code class="sig-name descname">start</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/FAW/FAW_server.html#FAWThreadedServer.start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the server. Spawns thread to listen and starts classificatoin
+Queue loop in main thread.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="FAW.FAW_server.FAWThreadedServer.validate_and_load_image">
+<code class="sig-name descname">validate_and_load_image</code><span class="sig-paren">(</span><em class="sig-param">image_bytes</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/FAW/FAW_server.html#FAWThreadedServer.validate_and_load_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.FAW_server.FAWThreadedServer.validate_and_load_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the image from bytes and check it is valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>image_bytes</strong> (<em>bytes</em>) – byte string of image sent from client.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if valid image, otherwise False.
+img (np.np_array): Loaded image if valid, otherwise None.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-FAW.ImageCheck">
+<span id="faw-imagecheck-module"></span><h2>FAW.ImageCheck module<a class="headerlink" href="#module-FAW.ImageCheck" title="Permalink to this headline">¶</a></h2>
+<p>Fall Armyworm Project - University of Manchester
+Author: George Worrall</p>
+<p>imagecheck.py</p>
+<p>Script to segment worm foreground objects from (mostly) uniform background.</p>
+<p>Outputs cropped image from original containing only the detected worm.</p>
+<p>For images with multiple foreground objects, script uses trained MLP to guess
+which is the worm by computing size-independent shape factors.
+Also performs blur check on images to ensure they are above a predefined blur
+threshold.</p>
+<dl class="exception">
+<dt id="FAW.ImageCheck.MultipleWormsError">
+<em class="property">exception </em><code class="sig-prename descclassname">FAW.ImageCheck.</code><code class="sig-name descname">MultipleWormsError</code><a class="reference internal" href="../_modules/FAW/ImageCheck.html#MultipleWormsError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.ImageCheck.MultipleWormsError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Error raised when more than one potential worm contour found in an
+image.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="FAW.ImageCheck.ObjectMissingError">
+<em class="property">exception </em><code class="sig-prename descclassname">FAW.ImageCheck.</code><code class="sig-name descname">ObjectMissingError</code><a class="reference internal" href="../_modules/FAW/ImageCheck.html#ObjectMissingError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.ImageCheck.ObjectMissingError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Error raised when no foreground objects are detected in an image.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="FAW.ImageCheck.TooBlurryError">
+<em class="property">exception </em><code class="sig-prename descclassname">FAW.ImageCheck.</code><code class="sig-name descname">TooBlurryError</code><a class="reference internal" href="../_modules/FAW/ImageCheck.html#TooBlurryError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.ImageCheck.TooBlurryError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Error raised when an image is too blurry.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="FAW.ImageCheck.WormMissingError">
+<em class="property">exception </em><code class="sig-prename descclassname">FAW.ImageCheck.</code><code class="sig-name descname">WormMissingError</code><a class="reference internal" href="../_modules/FAW/ImageCheck.html#WormMissingError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.ImageCheck.WormMissingError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Error raised when no worm/caterpillar like object found in an image.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="FAW.ImageCheck.check_and_crop">
+<code class="sig-prename descclassname">FAW.ImageCheck.</code><code class="sig-name descname">check_and_crop</code><span class="sig-paren">(</span><em class="sig-param">img_arg</em>, <em class="sig-param">dims=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/FAW/ImageCheck.html#check_and_crop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.ImageCheck.check_and_crop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds parent contours in an image, gets shape factors for those contours
+then crops the image to the area of interest containing the worm.</p>
+<p>If image given is larger than 224 x 224 (or supplied dims), scales the image
+down for preprocesing and then crops the original.</p>
+<dl class="simple">
+<dt>Contour detection notes:</dt><dd><ul class="simple">
+<li><p>If a contour touches the image border, it is rejected.</p></li>
+<li><p>If a contour is less than 1% of total image area, it is rejected.</p></li>
+</ul>
+</dd>
+<dt>Checks the image to see if it conforms to:</dt><dd><ul class="simple">
+<li><p>A preset blur threshold</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img_arg</strong> (<em>str or numpy.ndarray</em>) – String containing the location of the
+image file.</p></li>
+<li><p><strong>dims</strong> (<em>tuple</em>) – Required height and width for the image in format</p></li>
+<li><p><strong>(height, width)</strong></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Contains the cropped image as a an array of shape
+(h, w, 3).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="#FAW.ImageCheck.ObjectMissingError" title="FAW.ImageCheck.ObjectMissingError"><strong>ObjectMissingError</strong></a> – No foreground objects found in image.</p></li>
+<li><p><a class="reference internal" href="#FAW.ImageCheck.WormMissingError" title="FAW.ImageCheck.WormMissingError"><strong>WormMissingError</strong></a> – No worm found in image.</p></li>
+<li><p><a class="reference internal" href="#FAW.ImageCheck.MultipleWormsError" title="FAW.ImageCheck.MultipleWormsError"><strong>MultipleWormsError</strong></a> – Two or more worms found in image.</p></li>
+<li><p><a class="reference internal" href="#FAW.ImageCheck.TooBlurryError" title="FAW.ImageCheck.TooBlurryError"><strong>TooBlurryError</strong></a> – Image too blurry.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-FAW">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-FAW" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">FAW</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">FAW</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">FAW package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="train_model.html">Training A Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing_model.html">Testing A Trained Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setting_server.html">Setting Up A Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deploy_to_aws.html">Deploying To AWS</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">FAW</a><ul>
+      <li>Previous: <a href="modules.html" title="previous chapter">FAW</a></li>
+      <li>Next: <a href="train_model.html" title="next chapter">Training A Model</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, G Worrall.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/source/FAW.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

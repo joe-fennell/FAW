@@ -1,0 +1,30 @@
+tests package
+=============
+
+Submodules
+----------
+
+tests.FAW\_testclient module
+----------------------------
+
+.. automodule:: tests.FAW_testclient
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.train\_first\_test\_second module
+---------------------------------------
+
+.. automodule:: tests.train_first_test_second
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: tests
+   :members:
+   :undoc-members:
+   :show-inheritance:

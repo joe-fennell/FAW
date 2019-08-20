@@ -1,0 +1,241 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>FAW.FAW_classifier &#8212; FAW 0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for FAW.FAW_classifier</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Fall Armyworm Project - University of Manchester</span>
+<span class="sd">Author: George Worrall</span>
+
+<span class="sd">FAW_detector.py</span>
+
+<span class="sd">Script to identify Fall Armyworm from a given image..</span>
+
+<span class="sd">Outputs true or false for Fall Armyworm detected.</span>
+
+<span class="sd">Will generate and train the ResNet18 based classifier if it is not present.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">FAW</span> <span class="k">import</span> <span class="n">ImageCheck</span>
+<span class="kn">from</span> <span class="nn">FAW</span> <span class="k">import</span> <span class="n">ClassifierTools</span> <span class="k">as</span> <span class="n">CT</span> 
+
+
+<span class="c1"># Load in config from file</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">CT</span><span class="o">.</span><span class="n">load_config</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="FAW_classifier"><a class="viewcode-back" href="../../source/FAW.html#FAW.FAW_classifier.FAW_classifier">[docs]</a><span class="k">class</span> <span class="nc">FAW_classifier</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Classifer that loads CNN and crops and classifies fed images.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_classifier</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_classifier</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_load_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Loads an image from array or string.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">image</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">image</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ImageCheck</span><span class="o">.</span><span class="n">NotAnImageError</span>
+
+        <span class="k">return</span> <span class="n">image</span>
+
+<div class="viewcode-block" id="FAW_classifier.load_classifier"><a class="viewcode-back" href="../../source/FAW.html#FAW.FAW_classifier.FAW_classifier.load_classifier">[docs]</a>    <span class="k">def</span> <span class="nf">load_classifier</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Loads classifier via saved weights.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The loaded fully connected and trained model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">CT</span><span class="o">.</span><span class="n">load_classifier</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;working_model&#39;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="FAW_classifier.process_image"><a class="viewcode-back" href="../../source/FAW.html#FAW.FAW_classifier.FAW_classifier.process_image">[docs]</a>    <span class="k">def</span> <span class="nf">process_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Processes an image using imagecheck.check_and_crop function.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            image (str or numpy.ndarray): Path to the image to be process.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            A cropped image containing the worm.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ImageCheckError: Raised from `imagecheck/ImageCheck.py`</span>
+<span class="sd">                if the image does not meet the required standards or no</span>
+<span class="sd">                worm is found.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_image</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ImageCheck</span><span class="o">.</span><span class="n">check_and_crop</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">dims</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FAW_classifier.predict"><a class="viewcode-back" href="../../source/FAW.html#FAW.FAW_classifier.FAW_classifier.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">preprocessed</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Predict whether an image contains a Fall Armyworm.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            image (str or numpy.ndarray): Path to the image containing object</span>
+<span class="sd">                to be classified.</span>
+<span class="sd">            preprocessed (bool): If True, no processing will be applied to the</span>
+<span class="sd">                image as supplied image is expected to have already been</span>
+<span class="sd">                processed to meet the format requirements..</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            True if Fall Armyworm detected, else False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_image</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">preprocessed</span><span class="p">:</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span>
+                                       <span class="nb">tuple</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;img_input_shape&#39;</span><span class="p">][:</span><span class="mi">2</span><span class="p">]))</span>
+        <span class="c1"># reshape image to expected TF format (None, channels, height, width)</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_classifier</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">image</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="detect_fallarmyworm"><a class="viewcode-back" href="../../source/FAW.html#FAW.FAW_classifier.detect_fallarmyworm">[docs]</a><span class="k">def</span> <span class="nf">detect_fallarmyworm</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">preprocessed</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Predicts whether an iamge contains a Fall Armyworm or not. This is a</span>
+<span class="sd">    standalone function.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        image_path (str): path to the image</span>
+<span class="sd">        threshold (double): Threhold above which the ResNet positive</span>
+<span class="sd">        probability is classed as a positive classifiation. Default = 0.5</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True is contains Fall Armyworm, False otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">classifier</span> <span class="o">=</span> <span class="n">FAW_classifier</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">classifier</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">preprocessed</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="load_classifier_config"><a class="viewcode-back" href="../../source/FAW.html#FAW.FAW_classifier.load_classifier_config">[docs]</a><span class="k">def</span> <span class="nf">load_classifier_config</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Load in configuration from the config file.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: containing the saved model dir and the image input shape.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">config_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span> <span class="o">+</span> \
+            <span class="s1">&#39;/faw_config.json&#39;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;model_dir&#39;</span><span class="p">],</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;img_input_shape&#39;</span><span class="p">]</span></div>
+
+
+<span class="c1"># Argparse options for running from command line</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;path_to_img&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;path to the image to be analysed by the &quot;</span>
+                              <span class="s2">&quot;Fall Armyworm detector&quot;</span><span class="p">))</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">classifier</span> <span class="o">=</span> <span class="n">FAW_classifier</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">path_to_img</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">path_to_img</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+        <span class="n">prediction</span> <span class="o">=</span> <span class="n">classifier</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">path_to_img</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Fall Armyworm detected probability: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">prediction</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">FAW_Detector ERROR: </span><span class="si">{}</span><span class="s2"> is not a valid file.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">path_to_img</span><span class="p">))</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">FAW</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../source/modules.html">FAW</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/initial_setup.html">Initial Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/train_model.html">Training A Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/testing_model.html">Testing A Trained Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/setting_server.html">Setting Up A Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/deploy_to_aws.html">Deploying To AWS</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, G Worrall.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
