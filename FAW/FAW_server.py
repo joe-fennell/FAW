@@ -24,38 +24,6 @@ from FAW import ImageCheck as IC
 from FAW import ClassifierTools as CT
 
 # TODO: add local database to store received images and metadata
-config = CT.load_config()
-
-HOST = config['server_settings']['host_address']
-PORT = config['server_settings']['port']
-# Client to Server communication codes
-START = b'STRT'  # Beginning of message
-GPS = b'GPSC'  # GPS delimiter (coords in form Lat, Long (decimal degrees)
-LONG = b'LONG'  # Longitude delimiter
-SOF = b'SOFT'  # Start of image file
-END_MESSAGE = b'ENDM'
-# Server to Client communication codes
-DWLD_FAIL = b'FAIL'
-DWLD_SUCC = b'SUCC'
-INVALID = b'IVLD'
-TRUE = b'TRUE'  # <-- Classification True, as in Fall Armyworm identified.
-FALSE = b'FALS'
-OBJECT_MISSING = b'MISS'
-WORM_MISSING = b'NONE'
-MULTIPLE_WORMS = b'MANY'
-TOO_BLURRY = b'BLUR'
-
-# Threshold above which CNN output is classified as positive result
-CLASSIFICATION_THRESHOLD = config['classification_threshold']
-
-# Set debugging options
-parser = argparse.ArgumentParser()
-parser.add_argument('-d', "--debug", action='store_true',
-                    help="enable debugging")
-args = parser.parse_args()
-if args.debug:
-    logging.getLogger().setLevel(logging.DEBUG)
-    logging.basicConfig(format='%(asctime)s %(message)s', level=logging.DEBUG)
 
 class FAWThreadedServer:
     """Threaded server to handle multiple client connections.
@@ -79,8 +47,31 @@ class FAWThreadedServer:
         classifier (FAW_classifier.FAW_classifier): Fall Armyworm Classifier.
         classification_queue (queue.Queue): Queues the image to be classified.
     """
+    config = CT.load_config()
 
-    def __init__(self, host, port):
+    HOST = config['server_settings']['host_address']
+    PORT = config['server_settings']['port']
+    # Client to Server communication codes
+    START = b'STRT'  # Beginning of message
+    GPS = b'GPSC'  # GPS delimiter (coords in form Lat, Long (decimal degrees)
+    LONG = b'LONG'  # Longitude delimiter
+    SOF = b'SOFT'  # Start of image file
+    END_MESSAGE = b'ENDM'
+    # Server to Client communication codes
+    DWLD_FAIL = b'FAIL'
+    DWLD_SUCC = b'SUCC'
+    INVALID = b'IVLD'
+    TRUE = b'TRUE'  # <-- Classification True, as in Fall Armyworm identified.
+    FALSE = b'FALS'
+    OBJECT_MISSING = b'MISS'
+    WORM_MISSING = b'NONE'
+    MULTIPLE_WORMS = b'MANY'
+    TOO_BLURRY = b'BLUR'
+
+    # Threshold above which CNN output is classified as positive result
+    CLASSIFICATION_THRESHOLD = config['classification_threshold']
+
+    def __init__(self, host=HOST, port=PORT):
         self.host = host
         self.port = port
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -297,6 +288,14 @@ class FAWThreadedServer:
 
         return True, img
 
-
-server = FAWThreadedServer(HOST, PORT)
-server.start()
+if __name__ == '__main__':
+    # Set debugging options
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', "--debug", action='store_true',
+                        help="enable debugging")
+    args = parser.parse_args()
+    if args.debug:
+        logging.getLogger().setLevel(logging.DEBUG)
+        logging.basicConfig(format='%(asctime)s %(message)s', level=logging.DEBUG)
+    server = FAWThreadedServer()
+    server.start()
