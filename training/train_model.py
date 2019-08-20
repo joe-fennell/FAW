@@ -1,3 +1,11 @@
+"""
+Fall Armyworm Project - University of Manchester
+Author: George Worrall
+
+train_model.py
+
+Script to train the Fall Armyworm Classifier.
+"""
 import tensorflow as tf
 import keras
 import pandas as pd
@@ -12,6 +20,7 @@ from keras import models
 from keras.models import Sequential
 from keras.layers import Dropout, Flatten, Dense
 from keras.preprocessing.image import array_to_img
+from keras.applications.resnet50 import ResNet50
 from classification_models.resnet import ResNet18
 from skimage.segmentation import slic
 from training_utils import (setup_training_run_folder, get_num_samples,
@@ -56,17 +65,22 @@ preprocess_images(config['validation_dir'], config['img_input_shape'], logger)
 datagen = ImageDataGenerator(rotation_range=90,
                              fill_mode='nearest')
 
+# class indices order required to be explicit in order to ensure notfaw label
+# is 0 and faw label is 1
+class_indices = ['notfaw', 'faw']
 train_iter = get_iterator(datagen,
                           config['training_dir'],
                           config['img_input_shape'][:2],
-                          config['batch_size'])
+                          config['batch_size'],
+                          class_indices=class_indices)
 valid_iter = get_iterator(datagen,
                           config['validation_dir'],
                           config['img_input_shape'][:2],
-                          config['batch_size'])
+                          config['batch_size'],
+                          class_indices=class_indices)
 
 # ResNet18 base
-base_model = ResNet18(input_shape=config['img_input_shape'],
+base_model = ResNet50(input_shape=config['img_input_shape'],
                       weights='imagenet',
                       include_top=False)
 
@@ -88,10 +102,13 @@ datagen_top = ImageDataGenerator()
 train_iter_top = get_iterator(datagen_top,
                               config['training_dir'],
                               config['img_input_shape'][:2],
-                              class_mode='categorical')
+                              class_mode='binary',  # binary, either FAW or not
+                              class_indices=class_indices)
+                              
 valid_iter_top = get_iterator(datagen_top,
                               config['validation_dir'],
-                              config['img_input_shape'][:2])
+                              config['img_input_shape'][:2],
+                              class_indices=class_indices)
 train_labels = train_iter_top.classes
 validation_labels = valid_iter_top.classes
 num_classes = len(train_iter_top.class_indices)

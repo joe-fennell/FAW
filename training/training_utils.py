@@ -52,7 +52,7 @@ def setup_training_run_folder():
 
     # copy the current config file over for posterity
     config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                               'config.json')
+                               '../config.json')
     new_path = os.path.join(save_folder, '{}_config.json'.format(number))
     shutil.copyfile(config_path, new_path)
 
@@ -169,7 +169,7 @@ def load_config():
     Returns:
         dict
     """
-    config_file = os.path.dirname(os.path.abspath(__file__)) + '/config.json'
+    config_file = os.path.dirname(os.path.abspath(__file__)) + '/../config.json'
     with open(config_file, 'r') as f:
         config = json.load(f)
 
@@ -237,7 +237,8 @@ def get_iterator(generator,
                  target_size,
                  batch_size=1,
                  class_mode=None,
-                 shuffle=False):
+                 shuffle=False,
+                 class_indices=None):
 
     """Returns a DirectoryIterator yielding tuples of (x, y) where x is a numpy
     array containing a batch of images with shape (batch_size, *target_size,
@@ -265,7 +266,8 @@ def get_iterator(generator,
     iterator = generator.flow_from_directory(data_dir, target_size=target_size,
                                              batch_size=batch_size,
                                              class_mode=class_mode,
-                                             shuffle=shuffle)
+                                             shuffle=shuffle,
+                                             classes=class_indices)
 
     return iterator
 
@@ -313,5 +315,5 @@ def save_cnn_trained_model(model, training_history, save_dir, train_num):
     # Save the model structure to json file
     model_save = save_dir + '/{}_cnn_model.json'.format(train_num)
     model_json = model.to_json()
-    json.dump(model_json, open(model_save, 'w'))
-
+    with open(model_save, 'w') as f:
+        f.write(model_json)

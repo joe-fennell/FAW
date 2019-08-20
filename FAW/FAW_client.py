@@ -90,11 +90,3 @@ def send_image_to_server(filepath, coords):
         valid, result, error = (False, None, "Unknown error occurred.")
 
     return valid, result, error
-
-
-
-
-
-
-
-

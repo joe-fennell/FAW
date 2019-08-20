@@ -21,13 +21,13 @@ import numpy as np
 import cv2
 from FAW import FAW_classifier
 from FAW import ImageCheck as IC
-
+from FAW import ClassifierTools as CT
 
 # TODO: add local database to store received images and metadata
+config = CT.load_config()
 
-
-HOST = 'localhost'
-PORT = 7777
+HOST = config['server_settings']['host_address']
+PORT = config['server_settings']['port']
 # Client to Server communication codes
 START = b'STRT'  # Beginning of message
 GPS = b'GPSC'  # GPS delimiter (coords in form Lat, Long (decimal degrees)
@@ -46,7 +46,7 @@ MULTIPLE_WORMS = b'MANY'
 TOO_BLURRY = b'BLUR'
 
 # Threshold above which CNN output is classified as positive result
-CLASSIFICATION_THRESHOLD = 0.5
+CLASSIFICATION_THRESHOLD = config['classification_threshold']
 
 # Set debugging options
 parser = argparse.ArgumentParser()
@@ -54,8 +54,8 @@ parser.add_argument('-d', "--debug", action='store_true',
                     help="enable debugging")
 args = parser.parse_args()
 if args.debug:
+    logging.getLogger().setLevel(logging.DEBUG)
     logging.basicConfig(format='%(asctime)s %(message)s', level=logging.DEBUG)
-
 
 class FAWThreadedServer:
     """Threaded server to handle multiple client connections.

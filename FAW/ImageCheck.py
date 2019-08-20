@@ -66,7 +66,6 @@ def _blur_check(img):
     blur_var = cv2.Laplacian(img, cv2.CV_64F).var()
 
     if blur_var < 1.5:
-        print(blur_var)
         return False
 
     return True

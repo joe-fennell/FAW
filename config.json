@@ -1,5 +1,4 @@
-{
-    "training_dir": "/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/train",
+{ "training_dir": "/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/train",
     "validation_dir": "/home/gworrall/Documents/side_tasks/faw_manc/FAW/data/sorted/first_set/validation",
     "batch_size": 1,
     "img_input_shape": [
@@ -14,5 +13,11 @@
 	"cnn_num_trainable_layers": 1,
 	"cnn_learning_rate": 0.000001,
 	"cnn_num_training_epochs": 1 
+    },
+    "working_model": "/home/gworrall/Documents/side_tasks/faw_manc/FAW/FAW/model/",
+    "classification_threshold": 0.5,
+    "server_settings": {
+        "host_address": "localhost",
+	"port": 7777
     }
 }

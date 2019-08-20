@@ -11,33 +11,23 @@ Outputs true or false for Fall Armyworm detected.
 Will generate and train the ResNet18 based classifier if it is not present.
 """
 
-# TODO: investigate whether we can avoid hard coded image dimensions
-# TODO: add argparse classification threshold option
-
 import pathlib
 import argparse
 import cv2
 import numpy as np
 from FAW import ImageCheck
-from FAW import BuildClassifier as BC
+from FAW import ClassifierTools as CT 
 
 
-# GLOBALS
-BASE_PATH = str(pathlib.Path(__file__).parent)
-MLP_WEIGHTS = BASE_PATH + '/models/MLP_CNN_weights.h5'
-IMG_DIMS = (224, 224)
+# Load in config from file
+config = CT.load_config()
 
 
 class FAW_classifier:
     """Classifer that loads CNN and crops and classifies fed images."""
 
-    def __init__(self, classifier_weights=MLP_WEIGHTS):
-        """
-        Args:
-            classifier_weights (str): path to the .h5 MLP weights file.
-        """
-
-        self._classifier = self.load_classifier(classifier_weights)
+    def __init__(self):
+        self._classifier = self.load_classifier()
 
     def _load_image(self, image):
         """Loads an image from array or string."""
@@ -49,15 +39,13 @@ class FAW_classifier:
 
         return image
 
-    def load_classifier(self, mlp_weights_path):
+    def load_classifier(self):
         """ Loads classifier via saved weights.
 
-        Args:
-            weights_path (str): Path to the saved CNN classifier weights.
         Returns:
-            The loaded fully connected and trained ResNet18 model.
+            The loaded fully connected and trained model.
         """
-        return BC.make_classifier(mlp_weights_path)
+        return CT.load_classifier(config['working_model'])
 
     def process_image(self, image, dims=False):
         """Processes an image using imagecheck.check_and_crop function.
@@ -89,7 +77,8 @@ class FAW_classifier:
         """
         image = self._load_image(image)
         if not preprocessed:
-            image = self.process_image(image, IMG_DIMS)
+            image = self.process_image(image,
+                                       tuple(config['img_input_shape'][:2]))
         # reshape image to expected TF format (None, channels, height, width)
         image = np.asarray(image)
         image = np.expand_dims(image, axis=0)
@@ -98,14 +87,15 @@ class FAW_classifier:
 
 
 def detect_fallarmyworm(image, threshold=0.5, preprocessed=False):
-    """Predicts whether an iamge contains a Fall Armyworm or not.
+    """Predicts whether an iamge contains a Fall Armyworm or not. This is a
+    standalone function.
 
     Args:
         image_path (str): path to the image
         threshold (double): Threhold above which the ResNet positive
         probability is classed as a positive classifiation. Default = 0.5
     Returns:
-        bool : True is contains Fall Armyworm, False otherwise.
+        bool: True is contains Fall Armyworm, False otherwise.
     """
     classifier = FAW_classifier()
 
@@ -113,6 +103,20 @@ def detect_fallarmyworm(image, threshold=0.5, preprocessed=False):
         return True
 
     return False
+
+
+def load_classifier_config():
+    """Load in configuration from the config file.
+
+    Returns:
+        tuple: containing the saved model dir and the image input shape.
+    """
+    config_file = os.path.dirname(os.path.abspath(__file__)) + \
+            '/faw_config.json'
+    with open(config_file, 'r') as f:
+        config = json.load(f)
+
+    return config['model_dir'], config['img_input_shape']
 
 
 # Argparse options for running from command line
