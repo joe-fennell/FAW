@@ -8,10 +8,10 @@ Utility script for the Fall Armyworm Classifier.
 """
 
 import glob
-import os
 import json
 import pathlib
-from keras.models import model_from_json 
+from keras.models import model_from_json
+
 
 def load_classifier(model_dir):
 
@@ -41,6 +41,7 @@ def load_classifier(model_dir):
     model.load_weights(model_weights_h5)
 
     return model
+
 
 def load_config():
     """Loads the config.json file into memory.

@@ -9,7 +9,6 @@ Holds utility functions for model training.
 import glob
 import shutil
 import os
-import sys
 import logging
 import json
 import pathlib
@@ -143,24 +142,6 @@ def get_num_samples(path):
     num_jpgs = len(glob.glob(find_str, recursive=True))
 
     return num_jpgs
-
-
-def save_model(model, test_number):
-    """Saves the model to a saves folder in the saves directory as set in the
-    config.
-
-    Args:
-        model (keras.engine.training.Model): model to be saved
-        test_number (int): Unique test number used for the save folder name.
-
-    Returns:
-        None
-    """
-
-    model_json = model.to_json()
-
-    with open("model_structure.json", "w") as f:
-        f.write(model_json)
 
 
 def load_config():

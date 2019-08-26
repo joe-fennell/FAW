@@ -190,8 +190,8 @@ def check_and_crop(img_arg, dims=False):
     """Finds parent contours in an image, gets shape factors for those contours
     then crops the image to the area of interest containing the worm.
 
-    If image given is larger than 224 x 224 (or supplied dims), scales the image
-    down for preprocesing and then crops the original.
+    If image given is larger than 224 x 224 (or supplied dims), scales the
+    image down for preprocesing and then crops the original.
 
     Contour detection notes:
         - If a contour touches the image border, it is rejected.

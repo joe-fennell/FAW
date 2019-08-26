@@ -25,6 +25,7 @@ from FAW import ClassifierTools as CT
 
 # TODO: add local database to store received images and metadata
 
+
 class FAWThreadedServer:
     """Threaded server to handle multiple client connections.
 
@@ -111,9 +112,9 @@ class FAWThreadedServer:
                           "{}".format(client_data['client_address'],
                                       result))
 
-            if result == TRUE:
+            if result == self.TRUE:
                 client_data['FAW_classification'] = True
-            if result == FALSE:
+            if result == self.FALSE:
                 client_data['FAW_classification'] = False
 
             try:
@@ -161,8 +162,8 @@ class FAWThreadedServer:
         try:
             first_signal = client.recv(4)  # Get first four bytes
 
-            if first_signal != START:  # If starting delimiter not found
-                respond_and_shutdown(DWLD_FAIL)
+            if first_signal != self.START:  # If starting delimiter not found
+                respond_and_shutdown(self.DWLD_FAIL)
                 return
             logging.debug("Conn {}: START_MESSAGE signal received.".format(
                 address))
@@ -171,14 +172,14 @@ class FAWThreadedServer:
             while True:
                 data = client.recv(size)
 
-                if data[-4:] == END_MESSAGE:  # Delimiter for transfer end
+                if data[-4:] == self.END_MESSAGE:  # Delimiter for transfer end
                     message = message + data[:-4]
                     logging.debug("Conn {}: END_MESSAGE signal received."
                                   "".format(address))
                     break
 
                 if data == b'':  # File transfer connection broke off
-                    respond_and_shutdown(DWLD_FAIL)
+                    respond_and_shutdown(self.DWLD_FAIL)
 
                 message = message + data
 
@@ -190,13 +191,13 @@ class FAWThreadedServer:
             is_valid, client_data = self.decode_message(message, address)
 
             if not is_valid:
-                respond_and_shutdown(DWLD_FAIL)
+                respond_and_shutdown(self.DWLD_FAIL)
                 return
 
-            client.send(DWLD_SUCC)
+            client.send(self.DWLD_SUCC)
             logging.debug("Conn {}: Download successful. Sent code: {}".format(
                           address,
-                          DWLD_SUCC))
+                          self.DWLD_SUCC))
 
             # queue the image for classification in the main thread
             self.classification_queue.put((client, client_data))
@@ -221,15 +222,15 @@ class FAWThreadedServer:
                        'img': b'',
                        'FAW_classification': None}
 
-        if SOF not in message:
+        if self.SOF not in message:
             return False, None
 
-        [gps, img_data] = message.split(SOF)
+        [gps, img_data] = message.split(self.SOF)
 
-        if gps[:4] != GPS or LONG not in gps:
+        if gps[:4] != self.GPS or self.LONG not in gps:
             return False, None
 
-        lat, lon = gps[4:].split(LONG)
+        lat, lon = gps[4:].split(self.LONG)
         client_data['gps'] = (float(lat), float(lon))
         client_data['img'] = img_data
 
@@ -249,22 +250,22 @@ class FAWThreadedServer:
         """
         valid, image = self.validate_and_load_image(image)
         if not valid:
-            result = INVALID
+            result = self.INVALID
             return result
 
         try:
             if self.classifier.predict(image) > classification__threshold:
-                result = TRUE
+                result = self.TRUE
             else:
-                result = FALSE
+                result = self.FALSE
         except IC.ObjectMissingError:
-            result = OBJECT_MISSING
+            result = self.OBJECT_MISSING
         except IC.WormMissingError:
-            result = WORM_MISSING
+            result = self.WORM_MISSING
         except IC.MultipleWormsError:
-            result = MULTIPLE_WORMS
+            result = self.MULTIPLE_WORMS
         except IC.TooBlurryError:
-            result = TOO_BLURRY
+            result = self.TOO_BLURRY
 
         return result
 
@@ -288,6 +289,7 @@ class FAWThreadedServer:
 
         return True, img
 
+
 if __name__ == '__main__':
     # Set debugging options
     parser = argparse.ArgumentParser()
@@ -296,6 +298,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.debug:
         logging.getLogger().setLevel(logging.DEBUG)
-        logging.basicConfig(format='%(asctime)s %(message)s', level=logging.DEBUG)
+        logging.basicConfig(format='%(asctime)s %(message)s',
+                            level=logging.DEBUG)
     server = FAWThreadedServer()
     server.start()

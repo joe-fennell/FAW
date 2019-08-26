@@ -16,7 +16,7 @@ import argparse
 import cv2
 import numpy as np
 from FAW import ImageCheck
-from FAW import ClassifierTools as CT 
+from FAW import ClassifierTools as CT
 
 
 # Load in config from file
@@ -103,20 +103,6 @@ def detect_fallarmyworm(image, threshold=0.5, preprocessed=False):
         return True
 
     return False
-
-
-def load_classifier_config():
-    """Load in configuration from the config file.
-
-    Returns:
-        tuple: containing the saved model dir and the image input shape.
-    """
-    config_file = os.path.dirname(os.path.abspath(__file__)) + \
-            '/faw_config.json'
-    with open(config_file, 'r') as f:
-        config = json.load(f)
-
-    return config['model_dir'], config['img_input_shape']
 
 
 # Argparse options for running from command line

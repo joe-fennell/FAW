@@ -7,10 +7,11 @@ FAW_client.py
 Client script to interact with FAW_server.py
 """
 import socket
-import pathlib
+from FAW import ClassifierTools as CT
 
-HOST = 'localhost'
-PORT = 7777
+config = CT.load_config()
+HOST = config['server_settings']['host_address']
+PORT = config['server_settings']['port']
 # Client to Server communication codes
 START = b'STRT'  # Beginning of message
 GPS = b'GPSC'  # GPS delimiter (coords in form Lat, Long (decimal degrees))
@@ -45,7 +46,7 @@ def send_image_to_server(filepath, coords):
     # Read the image in to memory.
     with open(filepath, 'rb') as f:
         img_bytes = f.read()
-        
+
     # Start the socket to connect to the FAW_server running in a seperate
     # process.
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -79,7 +80,8 @@ def send_image_to_server(filepath, coords):
         valid, result, error = (False, None, "No foreground object was "
                                 "detected in the image.")
     elif response_2 == b'NONE':
-        valid, result, error = (False, None, "No caterpillar found in the image.")
+        valid, result, error = (False, None, "No caterpillar found "
+                                "in the image.")
     elif response_2 == b'MANY':
         valid, result, error = (False, None, "More than one caterpillar found "
                                 "in the image.")

@@ -8,28 +8,16 @@ Script to train the Fall Armyworm Classifier.
 """
 import tensorflow as tf
 import keras
-import pandas as pd
-import pickle
-import numpy as np
-import json
-import glob
-import os
 from keras.backend.tensorflow_backend import set_session
 from keras.preprocessing.image import ImageDataGenerator
 from keras import models
 from keras.models import Sequential
 from keras.layers import Dropout, Flatten, Dense
-from keras.preprocessing.image import array_to_img
 from keras.applications.resnet50 import ResNet50
-from classification_models.resnet import ResNet18
-from skimage.segmentation import slic
 from training_utils import (setup_training_run_folder, get_num_samples,
-                            save_model, load_config,
-                            store_training_validation_file_list,
+                            load_config, store_training_validation_file_list,
                             get_iterator, preprocess_images,
                             save_mlp_trained_model, save_cnn_trained_model)
-from FAW import ImageCheck
-
 
 # Set TensorFlow config
 tf_config = tf.ConfigProto()
@@ -52,8 +40,9 @@ store_training_validation_file_list((config['training_dir'],
 
 # Preprocess training data
 logger.warning("Image replacement: %s",
-   "\n\nImage preprocessing.\n\nBACKUP YOUR DATA BEFORE CONTINUINING")
-logger.warning("Image replacement: %s", 
+               "\n\nImage preprocessing.\n\nBACKUP YOUR DATA BEFORE"
+               " CONTINUINING")
+logger.warning("Image replacement: %s",
                "Processed images are saved over their originals"
                " and images that fail are removed.")
 input("Press any key to begin processing.")
@@ -88,14 +77,15 @@ base_model = ResNet50(input_shape=config['img_input_shape'],
 # get a numpy array of predictions from the train data
 logger.info("Running prediction generator for FC training.")
 mlp_train_data = base_model.predict_generator(train_iter,
-                                     (get_num_samples(config['training_dir'])
-                                      // config['batch_size']))
+                                              (get_num_samples(
+                                               config['training_dir'])
+                                               // config['batch_size']))
 
 # get a numpy array of predictions from the validation data
 mlp_validation_data = base_model.predict_generator(
     valid_iter,
     (get_num_samples(config['validation_dir'])
-    // config['batch_size']))
+     // config['batch_size']))
 
 # get the number of classes and their labels in original order
 datagen_top = ImageDataGenerator()
@@ -104,7 +94,7 @@ train_iter_top = get_iterator(datagen_top,
                               config['img_input_shape'][:2],
                               class_mode='binary',  # binary, either FAW or not
                               class_indices=class_indices)
-                              
+
 valid_iter_top = get_iterator(datagen_top,
                               config['validation_dir'],
                               config['img_input_shape'][:2],
@@ -127,10 +117,12 @@ mlp_model.compile(optimizer=adam,
                   metrics=['accuracy'])
 
 # Calculate and save the pre-trained weights
-mlp_history = mlp_model.fit(mlp_train_data, train_labels,
-                epochs=config['model_parameters']['mlp_num_training_epochs'],
-                batch_size=config['batch_size'],
-                validation_data=(mlp_validation_data, validation_labels))
+mlp_history = mlp_model.fit(
+    mlp_train_data,
+    train_labels,
+    epochs=config['model_parameters']['mlp_num_training_epochs'],
+    batch_size=config['batch_size'],
+    validation_data=(mlp_validation_data, validation_labels))
 save_mlp_trained_model(mlp_model, mlp_history, SAVE_DIR, TRAINING_NUMBER)
 
 # Set num of CNN trainable layers and build the fully connected MLP
@@ -166,15 +158,14 @@ validation_iterator = get_iterator(validation_datagen,
                                    class_mode='binary')
 
 # Fine-tune the ResNet model
-finetune_history = model.fit_generator(train_iterator,
-              steps_per_epoch=(
-              get_num_samples(config['training_dir'])
-              // config['batch_size']),
-              epochs=config['model_parameters']['cnn_num_training_epochs'],
-              validation_data=validation_iterator,
-              validation_steps=(
-              get_num_samples(config['training_dir'])
-              // config['batch_size']))
+finetune_history = model.fit_generator(
+    train_iterator,
+    steps_per_epoch=(get_num_samples(config['training_dir'])
+                     // config['batch_size']),
+    epochs=config['model_parameters']['cnn_num_training_epochs'],
+    validation_data=validation_iterator,
+    validation_steps=(get_num_samples(config['training_dir'])
+                      // config['batch_size']))
 save_cnn_trained_model(model, finetune_history, SAVE_DIR, TRAINING_NUMBER)
 
 logger.info('FINISHED: %s', "Model training complete.")
