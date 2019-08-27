@@ -14,7 +14,7 @@
     <script type="text/javascript" src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Training A Model" href="train_model.html" />
+    <link rel="next" title="Initial Setup" href="initial_setup.html" />
     <link rel="prev" title="FAW" href="modules.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -158,20 +158,6 @@ standalone function.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>bool</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="FAW.FAW_classifier.load_classifier_config">
-<code class="sig-prename descclassname">FAW.FAW_classifier.</code><code class="sig-name descname">load_classifier_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/FAW/FAW_classifier.html#load_classifier_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.FAW_classifier.load_classifier_config" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load in configuration from the config file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>containing the saved model dir and the image input shape.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>tuple</p>
 </dd>
 </dl>
 </dd></dl>
@@ -475,8 +461,8 @@ image.</p>
 <code class="sig-prename descclassname">FAW.ImageCheck.</code><code class="sig-name descname">check_and_crop</code><span class="sig-paren">(</span><em class="sig-param">img_arg</em>, <em class="sig-param">dims=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/FAW/ImageCheck.html#check_and_crop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#FAW.ImageCheck.check_and_crop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Finds parent contours in an image, gets shape factors for those contours
 then crops the image to the area of interest containing the worm.</p>
-<p>If image given is larger than 224 x 224 (or supplied dims), scales the image
-down for preprocesing and then crops the original.</p>
+<p>If image given is larger than 224 x 224 (or supplied dims), scales the
+image down for preprocesing and then crops the original.</p>
 <dl class="simple">
 <dt>Contour detection notes:</dt><dd><ul class="simple">
 <li><p>If a contour touches the image border, it is rejected.</p></li>
@@ -544,6 +530,7 @@ image file.</p></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">FAW package</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="initial_setup.html">Initial Setup</a></li>
 <li class="toctree-l1"><a class="reference internal" href="train_model.html">Training A Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="testing_model.html">Testing A Trained Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="setting_server.html">Setting Up A Server</a></li>
@@ -556,7 +543,7 @@ image file.</p></li>
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="modules.html">FAW</a><ul>
       <li>Previous: <a href="modules.html" title="previous chapter">FAW</a></li>
-      <li>Next: <a href="train_model.html" title="next chapter">Training A Model</a></li>
+      <li>Next: <a href="initial_setup.html" title="next chapter">Initial Setup</a></li>
   </ul></li>
   </ul></li>
 </ul>

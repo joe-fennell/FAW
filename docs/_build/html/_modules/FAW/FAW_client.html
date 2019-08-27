@@ -40,10 +40,11 @@
 <span class="sd">Client script to interact with FAW_server.py</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">socket</span>
-<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">from</span> <span class="nn">FAW</span> <span class="k">import</span> <span class="n">ClassifierTools</span> <span class="k">as</span> <span class="n">CT</span>
 
-<span class="n">HOST</span> <span class="o">=</span> <span class="s1">&#39;localhost&#39;</span>
-<span class="n">PORT</span> <span class="o">=</span> <span class="mi">7777</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">CT</span><span class="o">.</span><span class="n">load_config</span><span class="p">()</span>
+<span class="n">HOST</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;server_settings&#39;</span><span class="p">][</span><span class="s1">&#39;host_address&#39;</span><span class="p">]</span>
+<span class="n">PORT</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;server_settings&#39;</span><span class="p">][</span><span class="s1">&#39;port&#39;</span><span class="p">]</span>
 <span class="c1"># Client to Server communication codes</span>
 <span class="n">START</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;STRT&#39;</span>  <span class="c1"># Beginning of message</span>
 <span class="n">GPS</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;GPSC&#39;</span>  <span class="c1"># GPS delimiter (coords in form Lat, Long (decimal degrees))</span>
@@ -78,7 +79,7 @@
     <span class="c1"># Read the image in to memory.</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">img_bytes</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-        
+
     <span class="c1"># Start the socket to connect to the FAW_server running in a seperate</span>
     <span class="c1"># process.</span>
     <span class="n">sock</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
@@ -112,7 +113,8 @@
         <span class="n">valid</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;No foreground object was &quot;</span>
                                 <span class="s2">&quot;detected in the image.&quot;</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">response_2</span> <span class="o">==</span> <span class="sa">b</span><span class="s1">&#39;NONE&#39;</span><span class="p">:</span>
-        <span class="n">valid</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;No caterpillar found in the image.&quot;</span><span class="p">)</span>
+        <span class="n">valid</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;No caterpillar found &quot;</span>
+                                <span class="s2">&quot;in the image.&quot;</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">response_2</span> <span class="o">==</span> <span class="sa">b</span><span class="s1">&#39;MANY&#39;</span><span class="p">:</span>
         <span class="n">valid</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;More than one caterpillar found &quot;</span>
                                 <span class="s2">&quot;in the image.&quot;</span><span class="p">)</span>

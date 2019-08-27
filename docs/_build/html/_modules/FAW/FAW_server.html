@@ -58,6 +58,7 @@
 
 <span class="c1"># TODO: add local database to store received images and metadata</span>
 
+
 <div class="viewcode-block" id="FAWThreadedServer"><a class="viewcode-back" href="../../source/FAW.html#FAW.FAW_server.FAWThreadedServer">[docs]</a><span class="k">class</span> <span class="nc">FAWThreadedServer</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Threaded server to handle multiple client connections.</span>
 
@@ -144,9 +145,9 @@
                           <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">client_data</span><span class="p">[</span><span class="s1">&#39;client_address&#39;</span><span class="p">],</span>
                                       <span class="n">result</span><span class="p">))</span>
 
-            <span class="k">if</span> <span class="n">result</span> <span class="o">==</span> <span class="n">TRUE</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">result</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">TRUE</span><span class="p">:</span>
                 <span class="n">client_data</span><span class="p">[</span><span class="s1">&#39;FAW_classification&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="k">if</span> <span class="n">result</span> <span class="o">==</span> <span class="n">FALSE</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">result</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">FALSE</span><span class="p">:</span>
                 <span class="n">client_data</span><span class="p">[</span><span class="s1">&#39;FAW_classification&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
 
             <span class="k">try</span><span class="p">:</span>
@@ -194,8 +195,8 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">first_signal</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>  <span class="c1"># Get first four bytes</span>
 
-            <span class="k">if</span> <span class="n">first_signal</span> <span class="o">!=</span> <span class="n">START</span><span class="p">:</span>  <span class="c1"># If starting delimiter not found</span>
-                <span class="n">respond_and_shutdown</span><span class="p">(</span><span class="n">DWLD_FAIL</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">first_signal</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">START</span><span class="p">:</span>  <span class="c1"># If starting delimiter not found</span>
+                <span class="n">respond_and_shutdown</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DWLD_FAIL</span><span class="p">)</span>
                 <span class="k">return</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Conn </span><span class="si">{}</span><span class="s2">: START_MESSAGE signal received.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                 <span class="n">address</span><span class="p">))</span>
@@ -204,14 +205,14 @@
             <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
                 <span class="n">data</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
 
-                <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">:]</span> <span class="o">==</span> <span class="n">END_MESSAGE</span><span class="p">:</span>  <span class="c1"># Delimiter for transfer end</span>
+                <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">:]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">END_MESSAGE</span><span class="p">:</span>  <span class="c1"># Delimiter for transfer end</span>
                     <span class="n">message</span> <span class="o">=</span> <span class="n">message</span> <span class="o">+</span> <span class="n">data</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
                     <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Conn </span><span class="si">{}</span><span class="s2">: END_MESSAGE signal received.&quot;</span>
                                   <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">address</span><span class="p">))</span>
                     <span class="k">break</span>
 
                 <span class="k">if</span> <span class="n">data</span> <span class="o">==</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span><span class="p">:</span>  <span class="c1"># File transfer connection broke off</span>
-                    <span class="n">respond_and_shutdown</span><span class="p">(</span><span class="n">DWLD_FAIL</span><span class="p">)</span>
+                    <span class="n">respond_and_shutdown</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DWLD_FAIL</span><span class="p">)</span>
 
                 <span class="n">message</span> <span class="o">=</span> <span class="n">message</span> <span class="o">+</span> <span class="n">data</span>
 
@@ -223,13 +224,13 @@
             <span class="n">is_valid</span><span class="p">,</span> <span class="n">client_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decode_message</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">is_valid</span><span class="p">:</span>
-                <span class="n">respond_and_shutdown</span><span class="p">(</span><span class="n">DWLD_FAIL</span><span class="p">)</span>
+                <span class="n">respond_and_shutdown</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DWLD_FAIL</span><span class="p">)</span>
                 <span class="k">return</span>
 
-            <span class="n">client</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">DWLD_SUCC</span><span class="p">)</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DWLD_SUCC</span><span class="p">)</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Conn </span><span class="si">{}</span><span class="s2">: Download successful. Sent code: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                           <span class="n">address</span><span class="p">,</span>
-                          <span class="n">DWLD_SUCC</span><span class="p">))</span>
+                          <span class="bp">self</span><span class="o">.</span><span class="n">DWLD_SUCC</span><span class="p">))</span>
 
             <span class="c1"># queue the image for classification in the main thread</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">classification_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">client</span><span class="p">,</span> <span class="n">client_data</span><span class="p">))</span>
@@ -254,15 +255,15 @@
                        <span class="s1">&#39;img&#39;</span><span class="p">:</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
                        <span class="s1">&#39;FAW_classification&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
 
-        <span class="k">if</span> <span class="n">SOF</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">SOF</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">None</span>
 
-        <span class="p">[</span><span class="n">gps</span><span class="p">,</span> <span class="n">img_data</span><span class="p">]</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">SOF</span><span class="p">)</span>
+        <span class="p">[</span><span class="n">gps</span><span class="p">,</span> <span class="n">img_data</span><span class="p">]</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SOF</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">gps</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span> <span class="o">!=</span> <span class="n">GPS</span> <span class="ow">or</span> <span class="n">LONG</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">gps</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">gps</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GPS</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">LONG</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">gps</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">None</span>
 
-        <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="n">gps</span><span class="p">[</span><span class="mi">4</span><span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">LONG</span><span class="p">)</span>
+        <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="n">gps</span><span class="p">[</span><span class="mi">4</span><span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LONG</span><span class="p">)</span>
         <span class="n">client_data</span><span class="p">[</span><span class="s1">&#39;gps&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lat</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">lon</span><span class="p">))</span>
         <span class="n">client_data</span><span class="p">[</span><span class="s1">&#39;img&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">img_data</span>
 
@@ -282,22 +283,22 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">valid</span><span class="p">,</span> <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate_and_load_image</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">valid</span><span class="p">:</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">INVALID</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">INVALID</span>
             <span class="k">return</span> <span class="n">result</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">image</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">classification__threshold</span><span class="p">:</span>
-                <span class="n">result</span> <span class="o">=</span> <span class="n">TRUE</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TRUE</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">result</span> <span class="o">=</span> <span class="n">FALSE</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FALSE</span>
         <span class="k">except</span> <span class="n">IC</span><span class="o">.</span><span class="n">ObjectMissingError</span><span class="p">:</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">OBJECT_MISSING</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">OBJECT_MISSING</span>
         <span class="k">except</span> <span class="n">IC</span><span class="o">.</span><span class="n">WormMissingError</span><span class="p">:</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">WORM_MISSING</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">WORM_MISSING</span>
         <span class="k">except</span> <span class="n">IC</span><span class="o">.</span><span class="n">MultipleWormsError</span><span class="p">:</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">MULTIPLE_WORMS</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">MULTIPLE_WORMS</span>
         <span class="k">except</span> <span class="n">IC</span><span class="o">.</span><span class="n">TooBlurryError</span><span class="p">:</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">TOO_BLURRY</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TOO_BLURRY</span>
 
         <span class="k">return</span> <span class="n">result</span></div>
 
@@ -321,6 +322,7 @@
 
         <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">img</span></div></div>
 
+
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="c1"># Set debugging options</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
@@ -329,7 +331,8 @@
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span>
+                            <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
     <span class="n">server</span> <span class="o">=</span> <span class="n">FAWThreadedServer</span><span class="p">()</span>
     <span class="n">server</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 </pre></div>

@@ -1,3 +1,5 @@
+.. _setting_server:
+
 Setting Up A Server
 ===================
 

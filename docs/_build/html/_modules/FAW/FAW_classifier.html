@@ -49,7 +49,7 @@
 <span class="kn">import</span> <span class="nn">cv2</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">FAW</span> <span class="k">import</span> <span class="n">ImageCheck</span>
-<span class="kn">from</span> <span class="nn">FAW</span> <span class="k">import</span> <span class="n">ClassifierTools</span> <span class="k">as</span> <span class="n">CT</span> 
+<span class="kn">from</span> <span class="nn">FAW</span> <span class="k">import</span> <span class="n">ClassifierTools</span> <span class="k">as</span> <span class="n">CT</span>
 
 
 <span class="c1"># Load in config from file</span>
@@ -136,20 +136,6 @@
         <span class="k">return</span> <span class="kc">True</span>
 
     <span class="k">return</span> <span class="kc">False</span></div>
-
-
-<div class="viewcode-block" id="load_classifier_config"><a class="viewcode-back" href="../../source/FAW.html#FAW.FAW_classifier.load_classifier_config">[docs]</a><span class="k">def</span> <span class="nf">load_classifier_config</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Load in configuration from the config file.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        tuple: containing the saved model dir and the image input shape.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">config_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span> <span class="o">+</span> \
-            <span class="s1">&#39;/faw_config.json&#39;</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;model_dir&#39;</span><span class="p">],</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;img_input_shape&#39;</span><span class="p">]</span></div>
 
 
 <span class="c1"># Argparse options for running from command line</span>
