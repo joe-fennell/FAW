@@ -16,10 +16,17 @@ Step-by-Step Guide
 #. Set the CIDR, IP or Security Group field to 0.0.0.0/0
 #. Click review and then finish. Be sure to set up a private key and download it. This will be needed to log in to the virtual machine.
 #. Back at the management console, select the newly running instance and click connect.
-#. Once connected, the initial linux packages you will need to install are: `git` and `python3`. This can be done via::
+#. Follow the instructions to connect and once connected, the initial linux packages you will need to install are: `git` and `python3`. This can be done via::
 
         sudo yum install git python3
 
 
-#. Follow to instructions to SSH in to the instance and then install the package and setup the server via the :ref:`initial_setup` and :ref:`setting_server` tutorials.
+#. Next install the OpenCV dependencies via::
+
+        sudo yum install libXext libSM libXrender
+
+
+#. Finally, install the package and setup the server via the :ref:`initial_setup` and :ref:`setting_server` tutorials.
+
+**NOTE!:** Be sure to set the :code:`host_address` field to 0.0.0.0 for AWS and the port to the port you specified in Step 8.
 

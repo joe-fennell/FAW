@@ -47,13 +47,19 @@
 <li><p>Set the CIDR, IP or Security Group field to 0.0.0.0/0</p></li>
 <li><p>Click review and then finish. Be sure to set up a private key and download it. This will be needed to log in to the virtual machine.</p></li>
 <li><p>Back at the management console, select the newly running instance and click connect.</p></li>
-<li><p>Once connected, the initial linux packages you will need to install are: <cite>git</cite> and <cite>python3</cite>. This can be done via:</p>
+<li><p>Follow the instructions to connect and once connected, the initial linux packages you will need to install are: <cite>git</cite> and <cite>python3</cite>. This can be done via:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">yum</span> <span class="n">install</span> <span class="n">git</span> <span class="n">python3</span>
 </pre></div>
 </div>
 </li>
-<li><p>Follow to instructions to SSH in to the instance and then install the package and setup the server via the <a class="reference internal" href="initial_setup.html#initial-setup"><span class="std std-ref">Initial Setup</span></a> and <a class="reference internal" href="setting_server.html#setting-server"><span class="std std-ref">Setting Up A Server</span></a> tutorials.</p></li>
+<li><p>Next install the OpenCV dependencies via:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">yum</span> <span class="n">install</span> <span class="n">libXext</span> <span class="n">libSM</span> <span class="n">libXrender</span>
+</pre></div>
+</div>
+</li>
+<li><p>Finally, install the package and setup the server via the <a class="reference internal" href="initial_setup.html#initial-setup"><span class="std std-ref">Initial Setup</span></a> and <a class="reference internal" href="setting_server.html#setting-server"><span class="std std-ref">Setting Up A Server</span></a> tutorials.</p></li>
 </ol>
+<p><strong>NOTE!:</strong> Be sure to set the <code class="code docutils literal notranslate"><span class="pre">host_address</span></code> field to 0.0.0.0 for AWS and the port to the port you specified in Step 8.</p>
 </div>
 
 

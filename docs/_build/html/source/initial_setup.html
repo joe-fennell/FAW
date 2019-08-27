@@ -34,10 +34,38 @@
             
   <div class="section" id="initial-setup">
 <span id="id1"></span><h1>Initial Setup<a class="headerlink" href="#initial-setup" title="Permalink to this headline">¶</a></h1>
-<dl class="simple">
-<dt>TODO: write about pulling from github and installing requirements via requirements.txt</dt><dd><p>write about adding the FAW dir to the pythonpath so that the module will work</p>
-</dd>
-</dl>
+<p>Below are the steps to install and setup the package.</p>
+<ol class="arabic">
+<li><p>Pull the package from the github repo via:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">wirrell</span><span class="o">/</span><span class="n">FAW</span>
+</pre></div>
+</div>
+</li>
+<li><p>Make a virtual environment to install the requirements
+(docs at <a class="reference external" href="https://docs.python.org/3/library/venv.html">https://docs.python.org/3/library/venv.html</a>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">venv</span> <span class="n">faw_env</span>
+</pre></div>
+</div>
+</li>
+<li><p>Activate the virtual environment via:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">faw_env</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
+</pre></div>
+</div>
+</li>
+<li><p>Now navigate into the module and install the requirements using <code class="code docutils literal notranslate"><span class="pre">pip</span></code> via:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">FAW</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
+</pre></div>
+</div>
+</li>
+<li><p>Next, add the module to the pythonpath. This must be done so that the module can be imported and import itself via the standard <code class="code docutils literal notranslate"><span class="pre">import</span> <span class="pre">{package}</span></code> syntax used in Python. I recommend doing this by going into the virtual environment directory at <code class="code docutils literal notranslate"><span class="pre">faw_env/lib64/python3.6/site-packages</span></code> and add a file name faw.pth which contains a single line that is the path to the package e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">Documents</span><span class="o">/</span><span class="n">FAW</span>
+</pre></div>
+</div>
+</li>
+<li><p>Now you can edit the <code class="code docutils literal notranslate"><span class="pre">config.json</span></code> file and modify the <code class="code docutils literal notranslate"><span class="pre">training_dir</span></code>, <code class="code docutils literal notranslate"><span class="pre">validation_dir</span></code>, and <code class="code docutils literal notranslate"><span class="pre">working_model</span></code> (where the model to be loaded by the classifier will be stored).</p></li>
+<li><p>You can now edit the other parameters and run the <code class="code docutils literal notranslate"><span class="pre">train_model.py</span></code> script in the training dir to train a model before moving it in to your working model directory. The FAW package will now load the trained model when it is called upon to run a classification.</p></li>
+</ol>
 </div>
 
 
